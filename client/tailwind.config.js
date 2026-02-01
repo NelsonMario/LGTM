@@ -7,32 +7,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        'terminal-bg': '#0a0a0f',
-        'terminal-green': '#00ff88',
-        'terminal-red': '#ff4757',
-        'terminal-blue': '#3742fa',
-        'terminal-yellow': '#ffa502',
-        'terminal-purple': '#a855f7',
-        'panel-bg': '#12121a',
-        'panel-border': '#2a2a3a',
+        'primary': '#18181b',
+        'secondary': '#71717a',
+        'muted': '#a1a1aa',
+        'border': '#e4e4e7',
+        'surface': '#ffffff',
+        'background': '#fafafa',
+        'success': '#22c55e',
+        'danger': '#ef4444',
+        'warning': '#f59e0b',
       },
       fontFamily: {
-        'mono': ['JetBrains Mono', 'Fira Code', 'monospace'],
-        'display': ['Orbitron', 'sans-serif'],
+        'sans': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        'mono': ['JetBrains Mono', 'SF Mono', 'monospace'],
       },
-      animation: {
-        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-        'scan-line': 'scan-line 8s linear infinite',
+      borderRadius: {
+        'xl': '12px',
+        '2xl': '16px',
       },
-      keyframes: {
-        'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 5px #00ff88, 0 0 10px #00ff88, 0 0 15px #00ff88' },
-          '50%': { boxShadow: '0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 30px #00ff88' },
-        },
-        'scan-line': {
-          '0%': { transform: 'translateY(-100%)' },
-          '100%': { transform: 'translateY(100vh)' },
-        },
+      boxShadow: {
+        'soft': '0 4px 12px rgba(0, 0, 0, 0.05)',
+        'medium': '0 8px 24px rgba(0, 0, 0, 0.08)',
+        'large': '0 24px 48px rgba(0, 0, 0, 0.12)',
       },
     },
   },

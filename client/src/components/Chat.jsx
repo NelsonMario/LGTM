@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import Icon from './Icon'
 
 function Chat({ messages, onSendMessage, currentPlayer }) {
   const [input, setInput] = useState('')
@@ -26,21 +27,30 @@ function Chat({ messages, onSendMessage, currentPlayer }) {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {messages.length === 0 ? (
-          <p className="text-gray-600 text-sm text-center py-4">No messages yet...</p>
+          <p className="text-muted text-sm text-center py-4">No messages yet</p>
         ) : (
           messages.map((msg, index) => {
             const isOwnMessage = msg.playerId === currentPlayer?.id
             return (
-              <div key={index} className={`chat-message ${isOwnMessage ? 'bg-terminal-green/10' : ''}`}>
+              <div 
+                key={index} 
+                className={`chat-message ${isOwnMessage ? 'own' : ''}`}
+              >
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-sm" style={{ color: msg.playerColor || '#00ff88' }}>
+                  <span 
+                    className="font-medium text-xs"
+                    style={{ color: msg.playerColor || '#18181b' }}
+                  >
                     {msg.playerName}
                   </span>
-                  <span className="text-gray-600 text-xs">{formatTime(msg.timestamp)}</span>
+                  <span className="text-muted text-xs">
+                    {formatTime(msg.timestamp)}
+                  </span>
                 </div>
-                <p className="text-gray-300 text-sm break-words">{msg.message}</p>
+                <p className="text-sm text-primary">{msg.message}</p>
               </div>
             )
           })
@@ -48,22 +58,23 @@ function Chat({ messages, onSendMessage, currentPlayer }) {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSubmit} className="p-3 border-t border-panel-border shrink-0">
+      {/* Input */}
+      <form onSubmit={handleSubmit} className="p-3 border-t border-border shrink-0">
         <div className="flex items-center gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type..."
-            className="cyber-input flex-1 min-w-0 py-2 px-3 text-sm"
+            placeholder="Message..."
+            className="input text-sm py-2 flex-1 min-w-0"
             maxLength={200}
           />
           <button 
             type="submit" 
             disabled={!input.trim()} 
-            className="cyber-button py-2 px-3 text-sm shrink-0 whitespace-nowrap"
+            className="btn btn-primary py-2 px-3 shrink-0"
           >
-            ➤
+            <Icon name="send" size={14} />
           </button>
         </div>
       </form>

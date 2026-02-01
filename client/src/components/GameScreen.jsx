@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Editor from '@monaco-editor/react'
 import Chat from './Chat'
-import { runTests, formatTestResults } from '../utils/codeRunner'
+import Icon from './Icon'
+import { runTests } from '../utils/codeRunner'
 
 function GameScreen({ 
   role, 
@@ -16,13 +17,31 @@ function GameScreen({
   onCallMeeting,
   onSubmitTask,
   chatMessages,
-  onSendMessage
+  onSendMessage,
+  theme,
+  onToggleTheme
 }) {
   const [showMeetingConfirm, setShowMeetingConfirm] = useState(false)
   const [showSubmitModal, setShowSubmitModal] = useState(false)
   const [testResults, setTestResults] = useState(null)
   const [isRunning, setIsRunning] = useState(false)
+  const [editorTheme, setEditorTheme] = useState('light')
   const editorRef = useRef(null)
+
+  // Sync editor theme with document theme
+  useEffect(() => {
+    const updateTheme = () => {
+      const theme = document.documentElement.getAttribute('data-theme')
+      setEditorTheme(theme === 'dark' ? 'vs-dark' : 'light')
+    }
+    updateTheme()
+    
+    // Watch for theme changes
+    const observer = new MutationObserver(updateTheme)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    
+    return () => observer.disconnect()
+  }, [])
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
@@ -42,7 +61,6 @@ function GameScreen({
     if (!task) return
     setIsRunning(true)
     
-    // Small delay for UX
     setTimeout(() => {
       const results = runTests(code, task.functionName, task.testCases)
       setTestResults(results)
@@ -52,8 +70,6 @@ function GameScreen({
 
   const handleSubmitClick = () => {
     if (!task) return
-    
-    // Run tests first
     const results = runTests(code, task.functionName, task.testCases)
     setTestResults(results)
     setShowSubmitModal(true)
@@ -78,16 +94,16 @@ function GameScreen({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen flex flex-col"
+      className="min-h-screen flex flex-col bg-background"
     >
       {/* Header */}
-      <div className="bg-panel-bg border-b border-panel-border px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className={`role-badge ${role}`}>
-            {role === 'engineer' ? '🔧 Engineer' : '🔪 Impostor'}
+      <div className="bg-surface border-b border-border px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className={`badge ${role === 'engineer' ? 'badge-success' : 'badge-danger'}`}>
+            {role === 'engineer' ? 'Engineer' : 'Impostor'}
           </span>
-          <span className="text-gray-400 text-sm">
-            {role === 'engineer' ? 'Complete the task!' : 'Sabotage secretly...'}
+          <span className="text-secondary text-sm hidden sm:block">
+            {role === 'engineer' ? 'Complete the task' : 'Sabotage secretly'}
           </span>
         </div>
 
@@ -95,48 +111,58 @@ function GameScreen({
           {formatTime(timeRemaining)}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex items-center gap-2">
           <button 
             onClick={handleRunTests} 
             disabled={isRunning}
-            className="cyber-button text-sm py-2 px-4"
+            className="btn btn-secondary text-sm"
           >
-            {isRunning ? '⏳ Running...' : '▶️ RUN TESTS'}
+            <Icon name="play" size={14} />
+            {isRunning ? '...' : 'Run'}
           </button>
-          <button onClick={handleSubmitClick} className="cyber-button text-sm py-2 px-4">
-            ✅ SUBMIT
+          <button onClick={handleSubmitClick} className="btn btn-success text-sm">
+            <Icon name="check" size={14} />
+            Submit
           </button>
-          <button onClick={() => setShowMeetingConfirm(true)} className="cyber-button danger text-sm py-2 px-4">
-            🚨 MEETING
+          <button onClick={() => setShowMeetingConfirm(true)} className="btn btn-danger text-sm">
+            <Icon name="alert" size={14} />
+            Meeting
+          </button>
+          <button
+            onClick={onToggleTheme}
+            className="btn btn-ghost p-2"
+            aria-label="Toggle theme"
+          >
+            <Icon name={theme === 'light' ? 'moon' : 'sun'} size={16} />
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         {/* Left Panel */}
-        <div className="w-80 bg-panel-bg border-r border-panel-border flex flex-col">
-          <div className="p-4 border-b border-panel-border">
-            <h3 className="font-display text-terminal-green text-sm mb-2">OBJECTIVE</h3>
-            <h4 className="text-white font-bold mb-2">{task?.title}</h4>
-            <p className="text-gray-400 text-sm leading-relaxed">{task?.description}</p>
+        <div className="w-72 bg-surface border-r border-border flex flex-col">
+          <div className="p-4 border-b border-border">
+            <p className="section-header">Objective</p>
+            <h4 className="font-semibold text-sm mb-2">{task?.title}</h4>
+            <p className="text-secondary text-xs leading-relaxed">{task?.description}</p>
           </div>
 
           {/* Test Cases */}
-          <div className="p-4 border-b border-panel-border">
-            <h3 className="font-display text-terminal-green text-sm mb-3">TEST CASES</h3>
-            <div className="space-y-2 text-xs">
+          <div className="p-4 border-b border-border">
+            <p className="section-header">Test Cases</p>
+            <div className="space-y-1.5">
               {task?.testCases?.map((tc, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+                <div key={idx} className="flex items-center gap-2 text-xs font-mono">
                   {testResults?.results?.[idx] ? (
-                    <span className={testResults.results[idx].passed ? 'text-terminal-green' : 'text-terminal-red'}>
-                      {testResults.results[idx].passed ? '✅' : '❌'}
+                    <span className={`w-4 h-4 flex items-center justify-center ${testResults.results[idx].passed ? 'test-pass' : 'test-fail'}`}>
+                      <Icon name={testResults.results[idx].passed ? 'check' : 'x'} size={12} />
                     </span>
                   ) : (
-                    <span className="text-gray-500">⬜</span>
+                    <span className="w-4 h-4 rounded-full border border-current text-muted" />
                   )}
-                  <span className="text-gray-400">
-                    {task.functionName}({JSON.stringify(tc.input)}) → {JSON.stringify(tc.expected)}
+                  <span className="text-secondary truncate">
+                    {task.functionName}({JSON.stringify(tc.input).slice(0, 15)}) → {JSON.stringify(tc.expected)}
                   </span>
                 </div>
               ))}
@@ -144,45 +170,41 @@ function GameScreen({
           </div>
 
           {/* Players */}
-          <div className="p-4 border-b border-panel-border">
-            <h3 className="font-display text-terminal-green text-sm mb-3">PLAYERS</h3>
+          <div className="p-4 border-b border-border">
+            <p className="section-header">Players</p>
             <div className="space-y-2">
               {players.map((player) => (
                 <div 
                   key={player.id}
-                  className={`player-card flex items-center gap-3 ${!player.isAlive ? 'dead' : ''}`}
+                  className={`flex items-center gap-2 ${!player.isAlive ? 'opacity-40' : ''}`}
                 >
                   <div 
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                    style={{ backgroundColor: player.color + '30', color: player.color }}
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white"
+                    style={{ backgroundColor: player.color }}
                   >
                     {player.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="flex-1 truncate">{player.name}</span>
-                  {player.id === currentPlayer?.id && <span className="text-xs text-terminal-green">(YOU)</span>}
-                  {lastEditor?.id === player.id && <span className="text-xs text-terminal-yellow animate-pulse">typing...</span>}
+                  <span className="text-sm flex-1 truncate">{player.name}</span>
+                  {player.id === currentPlayer?.id && <span className="text-xs text-muted">(you)</span>}
+                  {lastEditor?.id === player.id && <span className="text-xs text-warning">typing</span>}
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Chat */}
           <div className="flex-1 flex flex-col min-h-0">
             <Chat messages={chatMessages} onSendMessage={onSendMessage} currentPlayer={currentPlayer} />
           </div>
         </div>
 
         {/* Code Editor */}
-        <div className="flex-1 flex flex-col">
-          <div className="bg-[#1e1e1e] px-4 py-2 border-b border-gray-800 flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-terminal-red" />
-              <div className="w-3 h-3 rounded-full bg-terminal-yellow" />
-              <div className="w-3 h-3 rounded-full bg-terminal-green" />
-            </div>
-            <span className="text-gray-400 text-sm ml-2">solution.js</span>
+        <div className="flex-1 flex flex-col bg-surface">
+          <div className="px-4 py-2 border-b border-border flex items-center justify-between">
+            <span className="text-sm font-medium">solution.js</span>
             {lastEditor && (
-              <span className="text-gray-500 text-xs ml-auto">
-                Last edit by: <span style={{ color: players.find(p => p.id === lastEditor.id)?.color }}>{lastEditor.name}</span>
+              <span className="text-xs text-muted">
+                Last edit: <span style={{ color: players.find(p => p.id === lastEditor.id)?.color }}>{lastEditor.name}</span>
               </span>
             )}
           </div>
@@ -191,56 +213,53 @@ function GameScreen({
             <Editor
               height="100%"
               defaultLanguage="javascript"
-              theme="vs-dark"
+              theme={editorTheme}
               value={code}
               onChange={handleEditorChange}
               onMount={handleEditorMount}
               options={{
                 fontSize: 14,
-                fontFamily: 'JetBrains Mono, monospace',
+                fontFamily: 'JetBrains Mono, SF Mono, monospace',
                 minimap: { enabled: false },
                 scrollBeyondLastLine: false,
                 lineNumbers: 'on',
                 glyphMargin: false,
                 folding: true,
-                padding: { top: 16 }
+                padding: { top: 16 },
+                renderLineHighlight: 'none',
+                overviewRulerBorder: false,
               }}
             />
           </div>
 
-          {/* Test Output Console */}
+          {/* Test Output */}
           <AnimatePresence>
             {testResults && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="bg-[#0d0d0d] border-t border-gray-800"
+                className="border-t border-border bg-background"
               >
                 <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className={`font-display text-sm ${testResults.passed ? 'text-terminal-green' : 'text-terminal-red'}`}>
-                      {testResults.passed ? '✅ ALL TESTS PASSED!' : '❌ TESTS FAILED'}
-                    </h4>
-                    <button 
-                      onClick={() => setTestResults(null)}
-                      className="text-gray-500 hover:text-white text-sm"
-                    >
-                      ✕ Close
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={`font-medium text-sm flex items-center gap-1.5 ${testResults.passed ? 'test-pass' : 'test-fail'}`}>
+                      <Icon name={testResults.passed ? 'check' : 'x'} size={14} />
+                      {testResults.passed ? 'All tests passed' : 'Tests failed'}
+                    </span>
+                    <button onClick={() => setTestResults(null)} className="btn-ghost text-xs">
+                      Close
                     </button>
                   </div>
-                  {testResults.error && (
-                    <p className="text-terminal-red text-sm mb-2">{testResults.error}</p>
+                  {testResults.error && !testResults.results?.length && (
+                    <p className="test-fail text-sm">{testResults.error}</p>
                   )}
                   <div className="space-y-1 text-xs font-mono">
                     {testResults.results?.map((result, idx) => (
-                      <div key={idx} className={result.passed ? 'text-terminal-green' : 'text-terminal-red'}>
-                        {result.passed ? '✓' : '✗'} Test {idx + 1}: 
-                        {task.functionName}({JSON.stringify(result.input)}) 
-                        {result.passed 
-                          ? ` = ${JSON.stringify(result.actual)}` 
-                          : ` expected ${JSON.stringify(result.expected)}, got ${result.error || JSON.stringify(result.actual)}`
-                        }
+                      <div key={idx} className={`flex items-center gap-1.5 ${result.passed ? 'test-pass' : 'test-fail'}`}>
+                        <Icon name={result.passed ? 'check' : 'x'} size={12} />
+                        <span>{task.functionName}({JSON.stringify(result.input)}) = {JSON.stringify(result.actual)}</span>
+                        {!result.passed && <span className="text-muted"> (expected {JSON.stringify(result.expected)})</span>}
                       </div>
                     ))}
                   </div>
@@ -251,13 +270,6 @@ function GameScreen({
         </div>
       </div>
 
-      {/* Role tip */}
-      <div className={`px-6 py-2 text-center text-sm ${role === 'impostor' ? 'bg-terminal-red/10 text-terminal-red' : 'bg-terminal-green/10 text-terminal-green'}`}>
-        {role === 'engineer' 
-          ? '💡 Tip: Click "RUN TESTS" to check your code. Watch for suspicious edits!'
-          : '💀 Tip: Be subtle! Add small bugs that break tests without being obvious.'}
-      </div>
-
       {/* Submit Modal */}
       <AnimatePresence>
         {showSubmitModal && (
@@ -265,42 +277,36 @@ function GameScreen({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+            className="modal-overlay"
           >
-            <motion.div 
-              initial={{ scale: 0.9 }} 
-              animate={{ scale: 1 }} 
-              className="terminal-panel p-8 max-w-lg"
-            >
-              <h3 className={`font-display text-2xl mb-4 text-center ${testResults?.passed ? 'text-terminal-green' : 'text-terminal-red'}`}>
-                {testResults?.passed ? '✅ READY TO SUBMIT!' : '❌ TESTS FAILED'}
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="modal-content">
+              <h3 className={`text-xl font-semibold mb-4 flex items-center gap-2 ${testResults?.passed ? 'test-pass' : 'test-fail'}`}>
+                <Icon name={testResults?.passed ? 'check' : 'x'} size={20} />
+                {testResults?.passed ? 'Ready to Submit' : 'Tests Failed'}
               </h3>
               
-              <div className="mb-6 p-4 bg-black/50 rounded max-h-48 overflow-y-auto">
-                {testResults?.error && !testResults.results?.length && (
-                  <p className="text-terminal-red text-sm">{testResults.error}</p>
-                )}
+              <div className="mb-6 p-4 bg-background rounded-lg max-h-40 overflow-y-auto">
                 {testResults?.results?.map((result, idx) => (
-                  <div key={idx} className={`text-sm ${result.passed ? 'text-terminal-green' : 'text-terminal-red'}`}>
-                    {result.passed ? '✓' : '✗'} Test {idx + 1}: {JSON.stringify(result.input)} → {JSON.stringify(result.actual)}
-                    {!result.passed && result.error && <span className="text-gray-400"> ({result.error})</span>}
+                  <div key={idx} className={`text-sm font-mono flex items-center gap-1.5 ${result.passed ? 'test-pass' : 'test-fail'}`}>
+                    <Icon name={result.passed ? 'check' : 'x'} size={12} />
+                    Test {idx + 1}
                   </div>
                 ))}
               </div>
 
-              {testResults?.passed ? (
-                <p className="text-gray-400 mb-6 text-center">All tests passed! Submit to win the game?</p>
-              ) : (
-                <p className="text-gray-400 mb-6 text-center">Fix the failing tests before submitting.</p>
-              )}
+              <p className="text-secondary text-sm mb-6">
+                {testResults?.passed 
+                  ? 'All tests passed! Submit to win the game?' 
+                  : 'Fix the failing tests before submitting.'}
+              </p>
               
-              <div className="flex gap-4 justify-center">
-                <button onClick={() => setShowSubmitModal(false)} className="cyber-button">
-                  {testResults?.passed ? 'Cancel' : 'Back to Code'}
+              <div className="flex gap-3">
+                <button onClick={() => setShowSubmitModal(false)} className="btn btn-secondary flex-1">
+                  Cancel
                 </button>
                 {testResults?.passed && (
-                  <button onClick={confirmSubmit} className="cyber-button">
-                    🏆 Submit & Win!
+                  <button onClick={confirmSubmit} className="btn btn-success flex-1">
+                    Submit & Win
                   </button>
                 )}
               </div>
@@ -316,14 +322,18 @@ function GameScreen({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+            className="modal-overlay"
           >
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="terminal-panel p-8 max-w-md text-center">
-              <h3 className="font-display text-2xl text-terminal-red mb-4">🚨 EMERGENCY MEETING</h3>
-              <p className="text-gray-400 mb-6">Are you sure? This will pause coding and start a vote.</p>
-              <div className="flex gap-4 justify-center">
-                <button onClick={() => setShowMeetingConfirm(false)} className="cyber-button">Cancel</button>
-                <button onClick={confirmMeeting} className="cyber-button danger">Call Meeting</button>
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="modal-content text-center">
+              <h3 className="text-xl font-semibold mb-2">Emergency Meeting</h3>
+              <p className="text-secondary text-sm mb-6">This will pause coding and start a vote.</p>
+              <div className="flex gap-3">
+                <button onClick={() => setShowMeetingConfirm(false)} className="btn btn-secondary flex-1">
+                  Cancel
+                </button>
+                <button onClick={confirmMeeting} className="btn btn-danger flex-1">
+                  Call Meeting
+                </button>
               </div>
             </motion.div>
           </motion.div>

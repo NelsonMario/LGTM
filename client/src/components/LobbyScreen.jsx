@@ -13,66 +13,68 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen flex flex-col items-center justify-center p-8"
+      className="min-h-screen flex flex-col items-center justify-center p-8 dot-pattern"
     >
       <motion.div
-        initial={{ y: -30, opacity: 0 }}
+        initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="text-center mb-8"
       >
-        <h2 className="font-display text-3xl text-terminal-green glow-text mb-2">LOBBY</h2>
-        <p className="text-gray-400">Waiting for players...</p>
+        <h2 className="text-2xl font-semibold text-primary mb-1">Waiting Room</h2>
+        <p className="text-secondary text-sm">Waiting for players to join...</p>
       </motion.div>
 
       {/* Room Code */}
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
+      <motion.button
+        initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="terminal-panel p-6 mb-8 text-center cursor-pointer hover:border-terminal-green transition-all"
+        transition={{ delay: 0.1 }}
         onClick={copyRoomCode}
+        className="card px-8 py-5 mb-8 text-center hover:shadow-soft cursor-pointer group"
       >
-        <p className="text-gray-400 text-sm mb-2">ROOM CODE (click to copy)</p>
-        <p className="font-display text-4xl text-terminal-green tracking-[0.5em] glow-text">
+        <p className="section-header">Room Code (click to copy)</p>
+        <p className="font-mono text-3xl font-bold tracking-[0.3em] text-primary group-hover:text-secondary transition-colors">
           {roomCode}
         </p>
-      </motion.div>
+      </motion.button>
 
       {/* Players Grid */}
       <motion.div
-        initial={{ y: 30, opacity: 0 }}
+        initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="grid grid-cols-2 gap-4 mb-8 w-full max-w-lg"
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-2 gap-3 mb-8 w-full max-w-md"
       >
         {[0, 1, 2, 3].map((index) => {
           const player = players[index]
           return (
             <motion.div
               key={index}
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 * index }}
-              className={`terminal-panel p-4 text-center ${
-                player ? 'border-terminal-green/50' : 'border-gray-700 border-dashed'
-              }`}
+              className={`card p-5 text-center ${!player ? 'border-dashed' : ''}`}
             >
               {player ? (
                 <>
                   <div 
-                    className="w-16 h-16 mx-auto rounded-full mb-3 flex items-center justify-center text-2xl font-bold"
-                    style={{ backgroundColor: player.color + '30', borderColor: player.color, borderWidth: 2 }}
+                    className="w-12 h-12 mx-auto rounded-full mb-3 flex items-center justify-center text-lg font-semibold text-white"
+                    style={{ backgroundColor: player.color }}
                   >
                     {player.name.charAt(0).toUpperCase()}
                   </div>
-                  <p className="text-white font-medium truncate">{player.name}</p>
-                  {index === 0 && <span className="text-xs text-terminal-yellow mt-1 block">HOST</span>}
-                  {player.id === currentPlayer?.id && <span className="text-xs text-terminal-green mt-1 block">(YOU)</span>}
+                  <p className="font-medium text-sm truncate">{player.name}</p>
+                  <div className="flex items-center justify-center gap-2 mt-1">
+                    {index === 0 && <span className="badge text-xs">Host</span>}
+                    {player.id === currentPlayer?.id && <span className="badge badge-success text-xs">You</span>}
+                  </div>
                 </>
               ) : (
                 <>
-                  <div className="w-16 h-16 mx-auto rounded-full mb-3 border-2 border-dashed border-gray-600 flex items-center justify-center">
-                    <span className="text-gray-600 text-2xl">?</span>
+                  <div className="w-12 h-12 mx-auto rounded-full mb-3 border-2 border-dashed border-border flex items-center justify-center">
+                    <span className="text-muted text-lg">?</span>
                   </div>
-                  <p className="text-gray-600">Waiting...</p>
+                  <p className="text-muted text-sm">Waiting...</p>
                 </>
               )}
             </motion.div>
@@ -82,10 +84,10 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
 
       {/* Player count */}
       <div className="text-center mb-6">
-        <span className={`text-2xl font-display ${canStart ? 'text-terminal-green' : 'text-terminal-yellow'}`}>
+        <span className={`text-2xl font-semibold ${canStart ? 'text-success' : 'text-warning'}`}>
           {players.length}/4
         </span>
-        <span className="text-gray-400 ml-2">players</span>
+        <span className="text-secondary ml-2 text-sm">players</span>
       </div>
 
       {/* Start button */}
@@ -93,41 +95,46 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
           onClick={onStartGame}
           disabled={!canStart}
-          className="cyber-button"
+          className={`btn ${canStart ? 'btn-primary' : 'btn-secondary'}`}
         >
-          {canStart ? 'START GAME' : 'NEED 4 PLAYERS'}
+          {canStart ? 'Start Game' : 'Need 4 Players'}
         </motion.button>
       ) : (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-gray-400">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-secondary text-sm"
+        >
           Waiting for host to start...
-        </motion.div>
+        </motion.p>
       )}
 
       {/* Rules */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="mt-12 terminal-panel p-6 max-w-lg"
+        transition={{ delay: 0.4 }}
+        className="mt-10 card p-6 max-w-md"
       >
-        <h3 className="font-display text-terminal-green mb-4">GAME RULES</h3>
-        <ul className="text-sm text-gray-400 space-y-2">
+        <p className="section-header">Game Rules</p>
+        <ul className="text-sm text-secondary space-y-2">
           <li className="flex items-start gap-2">
-            <span className="text-terminal-green">▸</span>
+            <span className="text-primary">•</span>
             <span>3 Engineers, 1 Impostor - roles assigned randomly</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-terminal-green">▸</span>
+            <span className="text-primary">•</span>
             <span>Engineers must complete the coding task together</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-terminal-red">▸</span>
+            <span className="text-danger">•</span>
             <span>The Impostor must secretly sabotage the code</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-terminal-yellow">▸</span>
+            <span className="text-warning">•</span>
             <span>Call a meeting if you suspect someone - vote to eject!</span>
           </li>
         </ul>

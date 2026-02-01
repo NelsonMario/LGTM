@@ -5,6 +5,7 @@ import LobbyScreen from './components/LobbyScreen'
 import GameScreen from './components/GameScreen'
 import VotingScreen from './components/VotingScreen'
 import ResultScreen from './components/ResultScreen'
+import Icon from './components/Icon'
 
 function App() {
   const [gameState, setGameState] = useState('home')
@@ -22,8 +23,24 @@ function App() {
   const [gameResult, setGameResult] = useState(null)
   const [error, setError] = useState(null)
   const [chatMessages, setChatMessages] = useState([])
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') || 'light'
+    }
+    return 'light'
+  })
   
   const wsRef = useRef(null)
+
+  // Theme effect
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+  }, [])
 
   useEffect(() => {
     // Connect to Go WebSocket server
@@ -202,10 +219,18 @@ function App() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-terminal-bg grid-bg relative">
-      {/* Scanline effect */}
-      <div className="scanline-overlay" />
-      
+    <div className="min-h-screen bg-background">
+      {/* Theme Toggle - Only show on home/lobby screens */}
+      {(gameState === 'home' || gameState === 'lobby' || gameState === 'ended') && (
+        <button
+          onClick={toggleTheme}
+          className="theme-toggle fixed top-4 right-4 z-40"
+          aria-label="Toggle theme"
+        >
+          <Icon name={theme === 'light' ? 'moon' : 'sun'} size={18} />
+        </button>
+      )}
+
       {/* Error toast */}
       <AnimatePresence>
         {error && (
@@ -213,7 +238,7 @@ function App() {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-terminal-red/20 border border-terminal-red text-terminal-red px-6 py-3 rounded-lg backdrop-blur-sm"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-danger/10 border border-danger text-danger px-6 py-3 rounded-xl shadow-medium"
           >
             {error}
           </motion.div>
@@ -254,6 +279,8 @@ function App() {
             onSubmitTask={submitTask}
             chatMessages={chatMessages}
             onSendMessage={sendChatMessage}
+            theme={theme}
+            onToggleTheme={toggleTheme}
           />
         )}
         
@@ -268,6 +295,8 @@ function App() {
             onVote={castVote}
             chatMessages={chatMessages}
             onSendMessage={sendChatMessage}
+            theme={theme}
+            onToggleTheme={toggleTheme}
           />
         )}
         
