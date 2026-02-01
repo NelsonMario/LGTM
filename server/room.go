@@ -67,16 +67,34 @@ func (r *Room) Run() {
 	for {
 		select {
 		case message := <-r.broadcast:
-			r.mutex.RLock()
+			r.mutex.Lock()
+			// Collect clients that need to be removed
+			clientsToRemove := make([]*Client, 0)
 			for client := range r.players {
 				select {
 				case client.send <- message:
+					// Successfully sent
 				default:
-					close(client.send)
-					delete(r.players, client)
+					// Channel full or closed - mark for removal
+					// Don't close channel here - it will be closed by hub.unregister
+					clientsToRemove = append(clientsToRemove, client)
 				}
 			}
-			r.mutex.RUnlock()
+			// Remove dead clients outside the loop to avoid modifying map while iterating
+			for _, client := range clientsToRemove {
+				// Just remove from room - hub will handle channel closing
+				delete(r.players, client)
+				client.room = nil
+				// Signal hub to clean up (non-blocking)
+				select {
+				case client.hub.unregister <- client:
+					// Successfully queued for cleanup
+				default:
+					// Hub busy, but client already removed from room
+					// Channel will be closed when hub processes it
+				}
+			}
+			r.mutex.Unlock()
 		}
 	}
 }

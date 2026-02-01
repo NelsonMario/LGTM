@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,11 +27,12 @@ var upgrader = websocket.Upgrader{
 }
 
 type Client struct {
-	id   string
-	hub  *Hub
-	conn *websocket.Conn
-	send chan []byte
-	room *Room
+	id        string
+	hub       *Hub
+	conn      *websocket.Conn
+	send      chan []byte
+	room      *Room
+	closeOnce sync.Once
 }
 
 type Message struct {
@@ -38,10 +40,17 @@ type Message struct {
 	Data json.RawMessage `json:"data"`
 }
 
+func (c *Client) cleanup() {
+	c.closeOnce.Do(func() {
+		close(c.send)
+		c.conn.Close()
+	})
+}
+
 func (c *Client) readPump() {
 	defer func() {
 		c.hub.unregister <- c
-		c.conn.Close()
+		c.cleanup()
 	}()
 
 	c.conn.SetReadLimit(maxMessageSize)
@@ -55,7 +64,7 @@ func (c *Client) readPump() {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
+				log.Printf("[LGTM] WebSocket read error: %v", err)
 			}
 			break
 		}
@@ -191,7 +200,16 @@ func (c *Client) handleStartGame() {
 }
 
 func (c *Client) handleCodeUpdate(code string) {
-	if c.room == nil || c.room.gameState != StatePlaying {
+	if c.room == nil {
+		return
+	}
+
+	// Check game state safely
+	c.room.mutex.RLock()
+	gameState := c.room.gameState
+	c.room.mutex.RUnlock()
+
+	if gameState != StatePlaying {
 		return
 	}
 
@@ -199,7 +217,16 @@ func (c *Client) handleCodeUpdate(code string) {
 }
 
 func (c *Client) handleCallMeeting() {
-	if c.room == nil || c.room.gameState != StatePlaying {
+	if c.room == nil {
+		return
+	}
+
+	// Check game state safely
+	c.room.mutex.RLock()
+	gameState := c.room.gameState
+	c.room.mutex.RUnlock()
+
+	if gameState != StatePlaying {
 		return
 	}
 
@@ -207,7 +234,16 @@ func (c *Client) handleCallMeeting() {
 }
 
 func (c *Client) handleCastVote(targetID string) {
-	if c.room == nil || c.room.gameState != StateVoting {
+	if c.room == nil {
+		return
+	}
+
+	// Check game state safely
+	c.room.mutex.RLock()
+	gameState := c.room.gameState
+	c.room.mutex.RUnlock()
+
+	if gameState != StateVoting {
 		return
 	}
 
@@ -219,8 +255,12 @@ func (c *Client) handleChatMessage(message string) {
 		return
 	}
 
+	c.room.mutex.RLock()
 	player := c.room.players[c]
-	if player == nil || !player.IsAlive {
+	isAlive := player != nil && player.IsAlive
+	c.room.mutex.RUnlock()
+
+	if !isAlive {
 		return
 	}
 
@@ -237,7 +277,16 @@ func (c *Client) handleChatMessage(message string) {
 }
 
 func (c *Client) handleSubmitTask(passed bool) {
-	if c.room == nil || c.room.gameState != StatePlaying {
+	if c.room == nil {
+		return
+	}
+
+	// Check game state safely
+	c.room.mutex.RLock()
+	gameState := c.room.gameState
+	c.room.mutex.RUnlock()
+
+	if gameState != StatePlaying {
 		return
 	}
 
@@ -270,7 +319,7 @@ func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		c.conn.Close()
+		c.cleanup()
 	}()
 
 	for {
@@ -278,6 +327,7 @@ func (c *Client) writePump() {
 		case message, ok := <-c.send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
+				// Channel closed, send close message
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -309,10 +359,11 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{
-		id:   uuid.New().String(),
-		hub:  hub,
-		conn: conn,
-		send: make(chan []byte, 256),
+		id:        uuid.New().String(),
+		hub:       hub,
+		conn:      conn,
+		send:      make(chan []byte, 256),
+		closeOnce: sync.Once{},
 	}
 
 	client.hub.register <- client

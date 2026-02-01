@@ -31,15 +31,18 @@ func (h *Hub) Run() {
 
 		case client := <-h.unregister:
 			h.mutex.Lock()
-			if client.room != nil {
-				client.room.RemovePlayer(client)
-				if len(client.room.players) == 0 {
-					delete(h.rooms, client.room.code)
+			room := client.room
+			if room != nil {
+				room.RemovePlayer(client)
+				if len(room.players) == 0 {
+					delete(h.rooms, room.code)
 				} else {
-					client.room.BroadcastPlayerList()
+					room.BroadcastPlayerList()
 				}
 			}
-			close(client.send)
+			// Cleanup will be handled by client.cleanup() when readPump/writePump exit
+			// But if they haven't called cleanup yet, we call it here
+			client.cleanup()
 			h.mutex.Unlock()
 		}
 	}
