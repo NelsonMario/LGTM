@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --terminal-green: #00ff88;
+  --terminal-red: #ff4757;
+  --terminal-bg: #0a0a0f;
+  --panel-bg: #12121a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background-color: var(--terminal-bg);
+  color: #e0e0e0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scanline effect overlay */
+.scanline-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+}
+
+/* Glowing text */
+.glow-text {
+  text-shadow: 0 0 10px var(--terminal-green),
+               0 0 20px var(--terminal-green),
+               0 0 30px var(--terminal-green);
+}
+
+.glow-text-red {
+  text-shadow: 0 0 10px var(--terminal-red),
+               0 0 20px var(--terminal-red),
+               0 0 30px var(--terminal-red);
+}
+
+/* Terminal panel styling */
+.terminal-panel {
+  background: linear-gradient(135deg, #12121a 0%, #0a0a0f 100%);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.1),
+              inset 0 0 60px rgba(0, 255, 136, 0.02);
+  border-radius: 8px;
+  position: relative;
+}
+
+.terminal-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--terminal-green), transparent);
+  opacity: 0.5;
+}
+
+/* Button styles */
+.cyber-button {
+  position: relative;
+  background: transparent;
+  border: 2px solid var(--terminal-green);
+  color: var(--terminal-green);
+  padding: 12px 32px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.cyber-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.cyber-button:hover::before {
+  left: 100%;
+}
+
+.cyber-button:hover {
+  background: rgba(0, 255, 136, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4),
+              inset 0 0 20px rgba(0, 255, 136, 0.1);
+}
+
+.cyber-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cyber-button.danger {
+  border-color: var(--terminal-red);
+  color: var(--terminal-red);
+}
+
+.cyber-button.danger:hover {
+  background: rgba(255, 71, 87, 0.1);
+  box-shadow: 0 0 20px rgba(255, 71, 87, 0.4);
+}
+
+/* Input styles */
+.cyber-input {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: var(--terminal-green);
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.cyber-input:focus {
+  border-color: var(--terminal-green);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+}
+
+.cyber-input::placeholder {
+  color: rgba(0, 255, 136, 0.4);
+}
+
+/* Grid background */
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Player card */
+.player-card {
+  background: linear-gradient(135deg, rgba(18, 18, 26, 0.9) 0%, rgba(10, 10, 15, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 20px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.player-card:hover {
+  border-color: var(--terminal-green);
+  transform: translateY(-2px);
+}
+
+.player-card.dead {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+/* Role badge */
+.role-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.role-badge.engineer {
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--terminal-green);
+  border: 1px solid var(--terminal-green);
+}
+
+.role-badge.impostor {
+  background: rgba(255, 71, 87, 0.2);
+  color: var(--terminal-red);
+  border: 1px solid var(--terminal-red);
+}
+
+/* Timer */
+.timer {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--terminal-green);
+}
+
+.timer.warning {
+  color: var(--terminal-red);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Chat styles */
+.chat-container {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 4px;
+}
+
+.chat-message {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chat-message:last-child {
+  border-bottom: none;
+}
+
+/* Vote button */
+.vote-button {
+  transition: all 0.3s ease;
+}
+
+.vote-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+}
+
+.vote-button.selected {
+  background: rgba(0, 255, 136, 0.3);
+  border-color: var(--terminal-green);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 136, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 136, 0.5);
+}

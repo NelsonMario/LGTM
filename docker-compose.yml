@@ -1,0 +1,35 @@
+services:
+  # Go WebSocket Server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: lgtm-server
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    networks:
+      - lgtm-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # React Frontend (Bun + Nginx)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: lgtm-client
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+    networks:
+      - lgtm-network
+
+networks:
+  lgtm-network:
+    driver: bridge
