@@ -28,7 +28,7 @@ function Chat({ messages, onSendMessage, currentPlayer }) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 min-w-0">
         {messages.length === 0 ? (
           <p className="text-muted text-sm text-center py-4">No messages yet</p>
         ) : (
@@ -37,20 +37,20 @@ function Chat({ messages, onSendMessage, currentPlayer }) {
             return (
               <div 
                 key={index} 
-                className={`chat-message ${isOwnMessage ? 'own' : ''}`}
+                className={`chat-message ${isOwnMessage ? 'own' : ''} w-full`}
               >
                 <div className="flex items-center gap-2 mb-1">
                   <span 
-                    className="font-medium text-xs"
+                    className="font-medium text-xs shrink-0"
                     style={{ color: msg.playerColor || '#18181b' }}
                   >
                     {msg.playerName}
                   </span>
-                  <span className="text-muted text-xs">
+                  <span className="text-muted text-xs shrink-0">
                     {formatTime(msg.timestamp)}
                   </span>
                 </div>
-                <p className="text-sm text-primary">{msg.message}</p>
+                <p className="text-sm text-primary break-words overflow-wrap-anywhere">{msg.message}</p>
               </div>
             )
           })

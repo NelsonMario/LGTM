@@ -33,7 +33,7 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
         className="card px-8 py-5 mb-8 text-center hover:shadow-soft cursor-pointer group"
       >
         <p className="section-header">Room Code (click to copy)</p>
-        <p className="font-mono text-3xl font-bold tracking-[0.3em] text-primary group-hover:text-secondary transition-colors">
+        <p className="font-mono text-2xl sm:text-3xl font-bold tracking-[0.2em] sm:tracking-[0.3em] text-primary group-hover:text-secondary transition-colors">
           {roomCode}
         </p>
       </motion.button>
@@ -43,7 +43,7 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="grid grid-cols-2 gap-3 mb-8 w-full max-w-md"
+        className="grid grid-cols-2 gap-2 sm:gap-3 mb-6 sm:mb-8 w-full max-w-md"
       >
         {[0, 1, 2, 3].map((index) => {
           const player = players[index]
@@ -117,7 +117,7 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="mt-10 card p-6 max-w-md"
+        className="mt-6 sm:mt-10 card p-4 sm:p-6 max-w-md w-full px-4"
       >
         <p className="section-header">Game Rules</p>
         <ul className="text-sm text-secondary space-y-2">

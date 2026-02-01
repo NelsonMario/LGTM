@@ -198,9 +198,15 @@ body {
 /* Timer */
 .timer {
   font-family: 'JetBrains Mono', 'SF Mono', monospace;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+@media (min-width: 640px) {
+  .timer {
+    font-size: 1.5rem;
+  }
 }
 
 .timer.warning {
@@ -233,6 +239,9 @@ body {
   border-radius: 10px;
   background: var(--bg-tertiary);
   margin-bottom: 8px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .chat-message.own {
@@ -370,9 +379,9 @@ body {
 
 /* Theme toggle button */
 .theme-toggle {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -381,7 +390,16 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   color: var(--text-primary);
-  font-size: 18px;
+  font-size: 16px;
+}
+
+@media (min-width: 640px) {
+  .theme-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 18px;
+  }
 }
 
 .theme-toggle:hover {

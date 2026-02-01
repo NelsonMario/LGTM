@@ -24,7 +24,7 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen flex flex-col items-center justify-center p-8 dot-pattern"
+      className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 dot-pattern"
     >
       {/* Logo */}
       <motion.div
@@ -33,10 +33,10 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
         transition={{ delay: 0.1 }}
         className="text-center mb-10"
       >
-        <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-primary mb-2">
+        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-primary mb-2">
           LGTM
         </h1>
-        <p className="text-secondary text-lg">
+        <p className="text-secondary text-base sm:text-lg">
           Looks Good To Me<span className="text-danger">?</span>
         </p>
       </motion.div>
@@ -46,7 +46,7 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="card p-8 w-full max-w-sm"
+        className="card p-4 sm:p-8 w-full max-w-sm"
       >
         {mode === 'menu' && (
           <motion.div
@@ -150,10 +150,10 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="mt-12 max-w-lg text-center"
+        className="mt-6 sm:mt-12 max-w-lg text-center w-full px-4"
       >
         <p className="section-header mb-6">How to Play</p>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
           <div className="card p-5 text-left">
             <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center mb-3">
               <Icon name="check" size={16} className="text-success" />

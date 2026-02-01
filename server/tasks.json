@@ -1,75 +1,44 @@
 [
   {
     "id": 1,
-    "title": "FizzBuzz",
-    "description": "Write a function that returns \"Fizz\" for multiples of 3, \"Buzz\" for multiples of 5, \"FizzBuzz\" for multiples of both, and the number as a string otherwise.",
-    "functionName": "fizzBuzz",
-    "starterCode": "function fizzBuzz(n) {\n  // Your code here\n  // Return \"Fizz\", \"Buzz\", \"FizzBuzz\", or the number as string\n  \n}",
+    "title": "Shopping Cart Calculator",
+    "description": "Build a shopping cart system. Engineer 1: implement addItem. Engineer 2: implement calculateTotal. Engineer 3: implement applyDiscount. All functions must work together!",
+    "functionName": "shoppingCart",
+    "starterCode": "// Shared cart state (all engineers work with this)\nlet cart = [];\n\n// Engineer 1: Add item to cart\nfunction addItem(product, price, quantity) {\n  // Add item object: {product, price, quantity}\n  // If product already exists, update quantity\n  // Return the cart array\n}\n\n// Engineer 2: Calculate total price\nfunction calculateTotal() {\n  // Sum up: price * quantity for each item\n  // Return total number\n}\n\n// Engineer 3: Apply discount\nfunction applyDiscount(percentage) {\n  // Calculate total first, then apply discount\n  // Return discounted total\n}\n\n// Main function that coordinates all three\n// Input is an array: [action, ...args]\nfunction shoppingCart(input) {\n  const [action, ...args] = input;\n  if (action === 'add') {\n    return addItem(args[0], args[1], args[2]);\n  } else if (action === 'total') {\n    return calculateTotal();\n  } else if (action === 'discount') {\n    return applyDiscount(args[0]);\n  }\n  return null;\n}",
     "testCases": [
-      {"input": 15, "expected": "FizzBuzz"},
-      {"input": 9, "expected": "Fizz"},
-      {"input": 10, "expected": "Buzz"},
-      {"input": 7, "expected": "7"}
+      {"input": ["add", "apple", 1.5, 3], "expected": [{"product": "apple", "price": 1.5, "quantity": 3}]},
+      {"input": ["add", "banana", 0.8, 2], "expected": [{"product": "apple", "price": 1.5, "quantity": 3}, {"product": "banana", "price": 0.8, "quantity": 2}]},
+      {"input": ["total"], "expected": 6.1},
+      {"input": ["discount", 10], "expected": 5.49}
     ]
   },
   {
     "id": 2,
-    "title": "Reverse String",
-    "description": "Write a function that reverses a string without using the built-in reverse() method.",
-    "functionName": "reverseString",
-    "starterCode": "function reverseString(str) {\n  // Your code here\n  // Return the reversed string\n  \n}",
+    "title": "Todo List Manager",
+    "description": "Create a todo list system. Engineer 1: implement addTodo. Engineer 2: implement completeTodo. Engineer 3: implement getActiveTodos. Coordinate to make them work together!",
+    "functionName": "todoManager",
+    "starterCode": "// Shared todos array (all engineers work with this)\nlet todos = [];\nlet nextId = 1;\n\n// Engineer 1: Add new todo\nfunction addTodo(text, priority) {\n  // Create todo object: {id, text, priority, completed: false}\n  // Add to todos array\n  // Return the new todo object\n}\n\n// Engineer 2: Mark todo as completed\nfunction completeTodo(id) {\n  // Find todo by id and set completed: true\n  // Return true if found, false otherwise\n}\n\n// Engineer 3: Get all active (not completed) todos\nfunction getActiveTodos() {\n  // Filter todos where completed === false\n  // Return array of active todos\n}\n\n// Main function that coordinates all three\n// Input is an array: [action, ...args]\nfunction todoManager(input) {\n  const [action, ...args] = input;\n  if (action === 'add') {\n    return addTodo(args[0], args[1]);\n  } else if (action === 'complete') {\n    return completeTodo(args[0]);\n  } else if (action === 'active') {\n    return getActiveTodos();\n  }\n  return null;\n}",
     "testCases": [
-      {"input": "hello", "expected": "olleh"},
-      {"input": "world", "expected": "dlrow"},
-      {"input": "a", "expected": "a"}
+      {"input": ["add", "Buy groceries", "high"], "expected": {"id": 1, "text": "Buy groceries", "priority": "high", "completed": false}},
+      {"input": ["add", "Write code", "medium"], "expected": {"id": 2, "text": "Write code", "priority": "medium", "completed": false}},
+      {"input": ["add", "Exercise", "low"], "expected": {"id": 3, "text": "Exercise", "priority": "low", "completed": false}},
+      {"input": ["complete", 1], "expected": true},
+      {"input": ["active"], "expected": [{"id": 2, "text": "Write code", "priority": "medium", "completed": false}, {"id": 3, "text": "Exercise", "priority": "low", "completed": false}]}
     ]
   },
   {
     "id": 3,
-    "title": "Find Maximum",
-    "description": "Write a function that finds the maximum number in an array without using Math.max().",
-    "functionName": "findMax",
-    "starterCode": "function findMax(arr) {\n  // Your code here\n  // Return the largest number in the array\n  \n}",
+    "title": "Inventory Tracker",
+    "description": "Build an inventory system. Engineer 1: implement addProduct. Engineer 2: implement sellProduct. Engineer 3: implement getLowStock. Work together to track inventory!",
+    "functionName": "inventory",
+    "starterCode": "// Shared inventory object (all engineers work with this)\nlet inventory = {};\n\n// Engineer 1: Add product to inventory\nfunction addProduct(name, quantity, price) {\n  // Store in inventory: {name: {quantity, price}}\n  // If exists, add to quantity\n  // Return current quantity\n}\n\n// Engineer 2: Sell product (reduce stock)\nfunction sellProduct(name, quantity) {\n  // Check if enough stock exists\n  // Reduce quantity\n  // Return true if sold, false if insufficient stock\n}\n\n// Engineer 3: Get products with low stock\nfunction getLowStock(threshold) {\n  // Find all products where quantity < threshold\n  // Return array of product names\n}\n\n// Main function that coordinates all three\n// Input is an array: [action, ...args]\nfunction inventory(input) {\n  const [action, ...args] = input;\n  if (action === 'add') {\n    return addProduct(args[0], args[1], args[2]);\n  } else if (action === 'sell') {\n    return sellProduct(args[0], args[1]);\n  } else if (action === 'lowStock') {\n    return getLowStock(args[0]);\n  }\n  return null;\n}",
     "testCases": [
-      {"input": [1, 5, 3, 9, 2], "expected": 9},
-      {"input": [-1, -5, -3], "expected": -1},
-      {"input": [42], "expected": 42}
-    ]
-  },
-  {
-    "id": 4,
-    "title": "Palindrome Check",
-    "description": "Write a function that checks if a string is a palindrome (reads the same forwards and backwards).",
-    "functionName": "isPalindrome",
-    "starterCode": "function isPalindrome(str) {\n  // Your code here\n  // Return true if palindrome, false otherwise\n  \n}",
-    "testCases": [
-      {"input": "racecar", "expected": true},
-      {"input": "hello", "expected": false},
-      {"input": "a", "expected": true}
-    ]
-  },
-  {
-    "id": 5,
-    "title": "Sum Array",
-    "description": "Write a function that returns the sum of all numbers in an array using a loop.",
-    "functionName": "sumArray",
-    "starterCode": "function sumArray(arr) {\n  // Your code here\n  // Return the sum of all numbers\n  \n}",
-    "testCases": [
-      {"input": [1, 2, 3, 4, 5], "expected": 15},
-      {"input": [10, 20, 30], "expected": 60},
-      {"input": [0], "expected": 0}
-    ]
-  },
-  {
-    "id": 6,
-    "title": "Count Vowels",
-    "description": "Write a function that counts the number of vowels (a, e, i, o, u) in a string.",
-    "functionName": "countVowels",
-    "starterCode": "function countVowels(str) {\n  // Your code here\n  // Return the count of vowels\n  \n}",
-    "testCases": [
-      {"input": "hello world", "expected": 3},
-      {"input": "aeiou", "expected": 5},
-      {"input": "xyz", "expected": 0}
+      {"input": ["add", "Laptop", 50, 999], "expected": 50},
+      {"input": ["add", "Mouse", 10, 25], "expected": 10},
+      {"input": ["add", "Keyboard", 5, 75], "expected": 5},
+      {"input": ["sell", "Laptop", 5], "expected": true},
+      {"input": ["sell", "Mouse", 3], "expected": true},
+      {"input": ["lowStock", 10], "expected": ["Mouse", "Keyboard"]}
     ]
   }
 ]

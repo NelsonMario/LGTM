@@ -224,10 +224,10 @@ function App() {
       {(gameState === 'home' || gameState === 'lobby' || gameState === 'ended') && (
         <button
           onClick={toggleTheme}
-          className="theme-toggle fixed top-4 right-4 z-40"
+          className="theme-toggle fixed top-2 right-2 sm:top-4 sm:right-4 z-40"
           aria-label="Toggle theme"
         >
-          <Icon name={theme === 'light' ? 'moon' : 'sun'} size={18} />
+          <Icon name={theme === 'light' ? 'moon' : 'sun'} size={16} className="sm:w-[18px] sm:h-[18px]" />
         </button>
       )}
 

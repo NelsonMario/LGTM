@@ -26,6 +26,9 @@ function GameScreen({
   const [testResults, setTestResults] = useState(null)
   const [isRunning, setIsRunning] = useState(false)
   const [editorTheme, setEditorTheme] = useState('light')
+  const [testCasesExpanded, setTestCasesExpanded] = useState(true)
+  const [hoveredTestCase, setHoveredTestCase] = useState(null)
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
   const editorRef = useRef(null)
 
   // Sync editor theme with document theme
@@ -97,81 +100,135 @@ function GameScreen({
       className="min-h-screen flex flex-col bg-background"
     >
       {/* Header */}
-      <div className="bg-surface border-b border-border px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className={`badge ${role === 'engineer' ? 'badge-success' : 'badge-danger'}`}>
+      <div className="bg-surface border-b border-border px-3 sm:px-6 py-2 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <span className={`badge text-xs ${role === 'engineer' ? 'badge-success' : 'badge-danger'}`}>
             {role === 'engineer' ? 'Engineer' : 'Impostor'}
           </span>
-          <span className="text-secondary text-sm hidden sm:block">
+          <span className="text-secondary text-xs sm:text-sm hidden sm:block">
             {role === 'engineer' ? 'Complete the task' : 'Sabotage secretly'}
           </span>
         </div>
 
-        <div className={`timer ${isTimeWarning ? 'warning' : ''}`}>
+        <div className={`timer text-lg sm:text-xl md:text-2xl ${isTimeWarning ? 'warning' : ''}`}>
           {formatTime(timeRemaining)}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           <button 
             onClick={handleRunTests} 
             disabled={isRunning}
-            className="btn btn-secondary text-sm"
+            className="btn btn-secondary text-xs sm:text-sm px-2 sm:px-3"
           >
-            <Icon name="play" size={14} />
-            {isRunning ? '...' : 'Run'}
+            <Icon name="play" size={12} className="sm:w-3.5 sm:h-3.5" />
+            <span className="hidden sm:inline">{isRunning ? '...' : 'Run'}</span>
           </button>
-          <button onClick={handleSubmitClick} className="btn btn-success text-sm">
-            <Icon name="check" size={14} />
-            Submit
+          <button onClick={handleSubmitClick} className="btn btn-success text-xs sm:text-sm px-2 sm:px-3">
+            <Icon name="check" size={12} className="sm:w-3.5 sm:h-3.5" />
+            <span className="hidden sm:inline">Submit</span>
           </button>
-          <button onClick={() => setShowMeetingConfirm(true)} className="btn btn-danger text-sm">
-            <Icon name="alert" size={14} />
-            Meeting
+          <button onClick={() => setShowMeetingConfirm(true)} className="btn btn-danger text-xs sm:text-sm px-2 sm:px-3">
+            <Icon name="alert" size={12} className="sm:w-3.5 sm:h-3.5" />
+            <span className="hidden sm:inline">Meeting</span>
           </button>
           <button
             onClick={onToggleTheme}
-            className="btn btn-ghost p-2"
+            className="btn btn-ghost p-1.5 sm:p-2"
             aria-label="Toggle theme"
           >
-            <Icon name={theme === 'light' ? 'moon' : 'sun'} size={16} />
+            <Icon name={theme === 'light' ? 'moon' : 'sun'} size={14} className="sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Left Panel */}
-        <div className="w-72 bg-surface border-r border-border flex flex-col">
-          <div className="p-4 border-b border-border">
-            <p className="section-header">Objective</p>
-            <h4 className="font-semibold text-sm mb-2">{task?.title}</h4>
+        <div className="w-full lg:w-72 bg-surface border-r-0 lg:border-r border-b lg:border-b-0 border-border flex flex-col shrink-0 max-h-64 lg:max-h-none overflow-y-auto">
+          <div className="p-3 sm:p-4 border-b border-border">
+            <p className="section-header text-xs">Objective</p>
+            <h4 className="font-semibold text-xs sm:text-sm mb-1 sm:mb-2">{task?.title}</h4>
             <p className="text-secondary text-xs leading-relaxed">{task?.description}</p>
           </div>
 
           {/* Test Cases */}
-          <div className="p-4 border-b border-border">
-            <p className="section-header">Test Cases</p>
-            <div className="space-y-1.5">
-              {task?.testCases?.map((tc, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-xs font-mono">
-                  {testResults?.results?.[idx] ? (
-                    <span className={`w-4 h-4 flex items-center justify-center ${testResults.results[idx].passed ? 'test-pass' : 'test-fail'}`}>
-                      <Icon name={testResults.results[idx].passed ? 'check' : 'x'} size={12} />
-                    </span>
-                  ) : (
-                    <span className="w-4 h-4 rounded-full border border-current text-muted" />
-                  )}
-                  <span className="text-secondary truncate">
-                    {task.functionName}({JSON.stringify(tc.input).slice(0, 15)}) → {JSON.stringify(tc.expected)}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div className="border-b border-border">
+            <button
+              onClick={() => setTestCasesExpanded(!testCasesExpanded)}
+              className="w-full p-4 flex items-center justify-between hover:bg-background transition-colors"
+            >
+              <p className="section-header">Test Cases</p>
+              <Icon 
+                name={testCasesExpanded ? 'x' : 'plus'} 
+                size={14} 
+                className="text-muted"
+              />
+            </button>
+            {testCasesExpanded && (
+              <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-1.5 max-h-64 overflow-y-auto">
+                {task?.testCases?.map((tc, idx) => {
+                  const fullText = `${task.functionName}(${JSON.stringify(tc.input)}) → ${JSON.stringify(tc.expected)}`
+                  const truncatedText = `${task.functionName}(${JSON.stringify(tc.input).slice(0, 20)}...) → ${JSON.stringify(tc.expected).slice(0, 20)}${JSON.stringify(tc.expected).length > 20 ? '...' : ''}`
+                  const isTruncated = fullText.length > 60
+                  
+                  return (
+                    <div 
+                      key={idx} 
+                      className="relative flex items-start gap-2 text-xs font-mono group"
+                      onMouseEnter={(e) => {
+                        setHoveredTestCase(idx)
+                        setTooltipPosition({ x: e.clientX, y: e.clientY })
+                      }}
+                      onMouseMove={(e) => {
+                        if (hoveredTestCase === idx) {
+                          setTooltipPosition({ x: e.clientX, y: e.clientY })
+                        }
+                      }}
+                      onMouseLeave={() => setHoveredTestCase(null)}
+                    >
+                      {testResults?.results?.[idx] ? (
+                        <span className={`w-4 h-4 flex items-center justify-center shrink-0 mt-0.5 ${testResults.results[idx].passed ? 'test-pass' : 'test-fail'}`}>
+                          <Icon name={testResults.results[idx].passed ? 'check' : 'x'} size={12} />
+                        </span>
+                      ) : (
+                        <span className="w-4 h-4 rounded-full border border-current text-muted shrink-0 mt-0.5" />
+                      )}
+                      <span className="text-secondary break-words min-w-0 flex-1">
+                        {isTruncated ? truncatedText : fullText}
+                      </span>
+                      {hoveredTestCase === idx && isTruncated && (
+                        <div 
+                          className="fixed z-[9999] p-3 bg-surface border border-border rounded-lg shadow-2xl text-xs font-mono max-w-md break-words pointer-events-none"
+                          style={{
+                            left: `${tooltipPosition.x + 10}px`,
+                            top: `${tooltipPosition.y + 10}px`,
+                            maxWidth: '400px'
+                          }}
+                        >
+                          <div className="text-primary font-semibold mb-2">Test {idx + 1}</div>
+                          <div className="text-secondary mb-1">
+                            <span className="text-muted">Input:</span> <span className="text-primary font-mono ml-1">{JSON.stringify(tc.input)}</span>
+                          </div>
+                          <div className="text-secondary mb-1">
+                            <span className="text-muted">Expected:</span> <span className="text-primary font-mono ml-1">{JSON.stringify(tc.expected)}</span>
+                          </div>
+                          {testResults?.results?.[idx] && (
+                            <div className={`mt-2 pt-2 border-t border-border ${testResults.results[idx].passed ? 'test-pass' : 'test-fail'}`}>
+                              <span className="text-muted">Actual:</span> <span className="font-mono ml-1">{JSON.stringify(testResults.results[idx].actual)}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           {/* Players */}
-          <div className="p-4 border-b border-border">
-            <p className="section-header">Players</p>
+          <div className="p-3 sm:p-4 border-b border-border">
+            <p className="section-header text-xs">Players</p>
             <div className="space-y-2">
               {players.map((player) => (
                 <div 
@@ -199,17 +256,17 @@ function GameScreen({
         </div>
 
         {/* Code Editor */}
-        <div className="flex-1 flex flex-col bg-surface">
-          <div className="px-4 py-2 border-b border-border flex items-center justify-between">
-            <span className="text-sm font-medium">solution.js</span>
+        <div className="flex-1 flex flex-col bg-surface min-h-0">
+          <div className="px-3 sm:px-4 py-2 border-b border-border flex items-center justify-between gap-2">
+            <span className="text-xs sm:text-sm font-medium truncate">solution.js</span>
             {lastEditor && (
-              <span className="text-xs text-muted">
+              <span className="text-xs text-muted shrink-0 hidden sm:inline">
                 Last edit: <span style={{ color: players.find(p => p.id === lastEditor.id)?.color }}>{lastEditor.name}</span>
               </span>
             )}
           </div>
 
-          <div className="flex-1">
+          <div className="flex-1 min-h-0">
             <Editor
               height="100%"
               defaultLanguage="javascript"
@@ -218,16 +275,18 @@ function GameScreen({
               onChange={handleEditorChange}
               onMount={handleEditorMount}
               options={{
-                fontSize: 14,
+                fontSize: 11,
                 fontFamily: 'JetBrains Mono, SF Mono, monospace',
                 minimap: { enabled: false },
                 scrollBeyondLastLine: false,
                 lineNumbers: 'on',
                 glyphMargin: false,
                 folding: true,
-                padding: { top: 16 },
+                padding: { top: 12 },
                 renderLineHighlight: 'none',
                 overviewRulerBorder: false,
+                wordWrap: 'on',
+                automaticLayout: true,
               }}
             />
           </div>
@@ -279,9 +338,9 @@ function GameScreen({
             exit={{ opacity: 0 }}
             className="modal-overlay"
           >
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="modal-content">
-              <h3 className={`text-xl font-semibold mb-4 flex items-center gap-2 ${testResults?.passed ? 'test-pass' : 'test-fail'}`}>
-                <Icon name={testResults?.passed ? 'check' : 'x'} size={20} />
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="modal-content max-w-[90vw] sm:max-w-md">
+              <h3 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2 ${testResults?.passed ? 'test-pass' : 'test-fail'}`}>
+                <Icon name={testResults?.passed ? 'check' : 'x'} size={18} className="sm:w-5 sm:h-5" />
                 {testResults?.passed ? 'Ready to Submit' : 'Tests Failed'}
               </h3>
               

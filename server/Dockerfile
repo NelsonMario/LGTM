@@ -25,6 +25,9 @@ WORKDIR /root/
 # Copy the binary from builder
 COPY --from=builder /app/main .
 
+# Copy tasks.json from builder
+COPY --from=builder /app/tasks.json .
+
 # Expose port
 EXPOSE 3001
 

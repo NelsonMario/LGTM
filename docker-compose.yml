@@ -10,6 +10,9 @@ services:
     restart: unless-stopped
     networks:
       - lgtm-network
+    volumes:
+      # Mount tasks.json for easy editing without rebuild
+      - ./server/tasks.json:/root/tasks.json:ro
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001"]
       interval: 30s

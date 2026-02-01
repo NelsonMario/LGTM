@@ -70,15 +70,15 @@ function VotingScreen({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Edit History */}
-        <div className="w-80 bg-surface border-r border-border flex flex-col">
-          <div className="p-4 border-b border-border">
-            <p className="section-header">Edit History</p>
+        <div className="w-full lg:w-80 bg-surface border-r-0 lg:border-r border-b lg:border-b-0 border-border flex flex-col shrink-0 max-h-48 lg:max-h-none overflow-y-auto">
+          <div className="p-3 sm:p-4 border-b border-border">
+            <p className="section-header text-xs">Edit History</p>
             <p className="text-xs text-muted">Recent code changes</p>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2">
             {editHistory.length === 0 ? (
               <p className="text-muted text-sm">No edits recorded.</p>
             ) : (
@@ -117,17 +117,17 @@ function VotingScreen({
         </div>
 
         {/* Voting Area */}
-        <div className="flex-1 flex flex-col p-8 overflow-y-auto">
+        <div className="flex-1 flex flex-col p-4 sm:p-6 lg:p-8 overflow-y-auto">
           {/* Timer */}
-          <div className="text-center mb-8">
-            <div className={`timer text-4xl ${timeRemaining <= 10 ? 'warning' : ''}`}>
+          <div className="text-center mb-4 sm:mb-8">
+            <div className={`timer text-2xl sm:text-3xl lg:text-4xl ${timeRemaining <= 10 ? 'warning' : ''}`}>
               {formatTime(timeRemaining)}
             </div>
-            <p className="text-secondary mt-2 text-sm">Vote for who you think is the impostor</p>
+            <p className="text-secondary mt-2 text-xs sm:text-sm">Vote for who you think is the impostor</p>
           </div>
 
           {/* Vote Cards */}
-          <div className="grid grid-cols-2 gap-4 max-w-xl mx-auto mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-xl mx-auto mb-4 sm:mb-8 w-full">
             {alivePlayers.map((player, index) => {
               const isCurrentPlayer = player.id === currentPlayer?.id
               const isSelected = selectedPlayer === player.id
@@ -158,11 +158,11 @@ function VotingScreen({
 
           {/* Vote Actions */}
           {!hasVoted ? (
-            <div className="flex gap-3 justify-center">
-              <button onClick={handleSkip} className="btn btn-secondary">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center px-4">
+              <button onClick={handleSkip} className="btn btn-secondary text-sm">
                 Skip Vote
               </button>
-              <button onClick={handleVote} disabled={selectedPlayer === null} className="btn btn-primary">
+              <button onClick={handleVote} disabled={selectedPlayer === null} className="btn btn-primary text-sm">
                 Vote to Eject
               </button>
             </div>
@@ -181,11 +181,11 @@ function VotingScreen({
         </div>
 
         {/* Chat */}
-        <div className="w-72 bg-surface border-l border-border flex flex-col">
-          <div className="p-4 border-b border-border">
-            <p className="section-header">Discussion</p>
+        <div className="w-full lg:w-72 bg-surface border-l-0 lg:border-l border-t lg:border-t-0 border-border flex flex-col shrink-0 max-h-64 lg:max-h-none">
+          <div className="p-3 sm:p-4 border-b border-border">
+            <p className="section-header text-xs">Discussion</p>
           </div>
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <Chat messages={chatMessages} onSendMessage={onSendMessage} currentPlayer={currentPlayer} />
           </div>
         </div>
