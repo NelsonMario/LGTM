@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -181,7 +182,12 @@ func (r *Room) StartGame() {
 	}
 
 	// Select random task
-	r.currentTask = &Tasks[rand.Intn(len(Tasks))]
+	tasks := GetTasks()
+	if len(tasks) == 0 {
+		log.Printf("[LGTM] No tasks available!")
+		return
+	}
+	r.currentTask = &tasks[rand.Intn(len(tasks))]
 	r.currentCode = r.currentTask.StarterCode
 	r.gameState = StatePlaying
 	r.timeRemaining = 180

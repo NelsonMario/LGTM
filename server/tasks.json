@@ -1,0 +1,75 @@
+[
+  {
+    "id": 1,
+    "title": "FizzBuzz",
+    "description": "Write a function that returns \"Fizz\" for multiples of 3, \"Buzz\" for multiples of 5, \"FizzBuzz\" for multiples of both, and the number as a string otherwise.",
+    "functionName": "fizzBuzz",
+    "starterCode": "function fizzBuzz(n) {\n  // Your code here\n  // Return \"Fizz\", \"Buzz\", \"FizzBuzz\", or the number as string\n  \n}",
+    "testCases": [
+      {"input": 15, "expected": "FizzBuzz"},
+      {"input": 9, "expected": "Fizz"},
+      {"input": 10, "expected": "Buzz"},
+      {"input": 7, "expected": "7"}
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Reverse String",
+    "description": "Write a function that reverses a string without using the built-in reverse() method.",
+    "functionName": "reverseString",
+    "starterCode": "function reverseString(str) {\n  // Your code here\n  // Return the reversed string\n  \n}",
+    "testCases": [
+      {"input": "hello", "expected": "olleh"},
+      {"input": "world", "expected": "dlrow"},
+      {"input": "a", "expected": "a"}
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Find Maximum",
+    "description": "Write a function that finds the maximum number in an array without using Math.max().",
+    "functionName": "findMax",
+    "starterCode": "function findMax(arr) {\n  // Your code here\n  // Return the largest number in the array\n  \n}",
+    "testCases": [
+      {"input": [1, 5, 3, 9, 2], "expected": 9},
+      {"input": [-1, -5, -3], "expected": -1},
+      {"input": [42], "expected": 42}
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Palindrome Check",
+    "description": "Write a function that checks if a string is a palindrome (reads the same forwards and backwards).",
+    "functionName": "isPalindrome",
+    "starterCode": "function isPalindrome(str) {\n  // Your code here\n  // Return true if palindrome, false otherwise\n  \n}",
+    "testCases": [
+      {"input": "racecar", "expected": true},
+      {"input": "hello", "expected": false},
+      {"input": "a", "expected": true}
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Sum Array",
+    "description": "Write a function that returns the sum of all numbers in an array using a loop.",
+    "functionName": "sumArray",
+    "starterCode": "function sumArray(arr) {\n  // Your code here\n  // Return the sum of all numbers\n  \n}",
+    "testCases": [
+      {"input": [1, 2, 3, 4, 5], "expected": 15},
+      {"input": [10, 20, 30], "expected": 60},
+      {"input": [0], "expected": 0}
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Count Vowels",
+    "description": "Write a function that counts the number of vowels (a, e, i, o, u) in a string.",
+    "functionName": "countVowels",
+    "starterCode": "function countVowels(str) {\n  // Your code here\n  // Return the count of vowels\n  \n}",
+    "testCases": [
+      {"input": "hello world", "expected": 3},
+      {"input": "aeiou", "expected": 5},
+      {"input": "xyz", "expected": 0}
+    ]
+  }
+]

@@ -6,6 +6,11 @@ import (
 )
 
 func main() {
+	// Load tasks from file
+	if err := LoadTasks(); err != nil {
+		log.Fatalf("[LGTM] Failed to load tasks.json: %v", err)
+	}
+
 	hub := NewHub()
 	go hub.Run()
 
@@ -18,7 +23,7 @@ func main() {
 
 	log.Println("🚀 LGTM server running on :3001")
 	log.Println("📡 WebSocket endpoint: ws://localhost:3001/ws")
-	
+
 	if err := http.ListenAndServe(":3001", nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
