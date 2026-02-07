@@ -1,2 +1,6 @@
 export { default as Icon } from './Icon'
 export type { IconName } from './Icon'
+export { default as TypeWriter } from './TypeWriter'
+export type { TypeWriterProps } from './TypeWriter'
+export { default as TerminalInput } from './TerminalInput'
+export type { TerminalInputProps } from './TerminalInput'

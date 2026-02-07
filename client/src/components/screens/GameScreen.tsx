@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Editor from '@monaco-editor/react'
 import { Chat } from '@/components/chat'
@@ -183,36 +184,38 @@ export default function GameScreen({
                       <span className="text-secondary break-words min-w-0 flex-1">
                         {isTruncated ? truncatedText : fullText}
                       </span>
-                      {hoveredTestCase === idx && isTruncated && (
-                        <div
-                          className="fixed z-[9999] p-3 bg-surface border border-border rounded-lg shadow-2xl text-xs font-mono max-w-md break-words pointer-events-none"
-                          style={{
-                            left: `${tooltipPosition.x + 10}px`,
-                            top: `${tooltipPosition.y + 10}px`,
-                            maxWidth: '400px',
-                          }}
-                        >
-                          <div className="text-primary font-semibold mb-2">Test {idx + 1}</div>
-                          <div className="text-secondary mb-1">
-                            <span className="text-muted">Input:</span>{' '}
-                            <span className="text-primary font-mono ml-1">{JSON.stringify(tc.input)}</span>
-                          </div>
-                          <div className="text-secondary mb-1">
-                            <span className="text-muted">Expected:</span>{' '}
-                            <span className="text-primary font-mono ml-1">{JSON.stringify(tc.expected)}</span>
-                          </div>
-                          {testResults?.results?.[idx] && (
-                            <div
-                              className={`mt-2 pt-2 border-t border-border ${testResults.results[idx].passed ? 'test-pass' : 'test-fail'}`}
-                            >
-                              <span className="text-muted">Actual:</span>{' '}
-                              <span className="font-mono ml-1">
-                                {JSON.stringify(testResults.results[idx].actual)}
-                              </span>
+                      {hoveredTestCase === idx && isTruncated &&
+                        createPortal(
+                          <div
+                            className="fixed z-[99999] p-3 bg-surface border border-border rounded-lg shadow-2xl text-xs font-mono max-w-md break-words pointer-events-none"
+                            style={{
+                              left: `${tooltipPosition.x + 10}px`,
+                              top: `${tooltipPosition.y + 10}px`,
+                              maxWidth: '400px',
+                            }}
+                          >
+                            <div className="text-primary font-semibold mb-2">Test {idx + 1}</div>
+                            <div className="text-secondary mb-1">
+                              <span className="text-muted">Input:</span>{' '}
+                              <span className="text-primary font-mono ml-1">{JSON.stringify(tc.input)}</span>
                             </div>
-                          )}
-                        </div>
-                      )}
+                            <div className="text-secondary mb-1">
+                              <span className="text-muted">Expected:</span>{' '}
+                              <span className="text-primary font-mono ml-1">{JSON.stringify(tc.expected)}</span>
+                            </div>
+                            {testResults?.results?.[idx] && (
+                              <div
+                                className={`mt-2 pt-2 border-t border-border ${testResults.results[idx].passed ? 'test-pass' : 'test-fail'}`}
+                              >
+                                <span className="text-muted">Actual:</span>{' '}
+                                <span className="font-mono ml-1">
+                                  {JSON.stringify(testResults.results[idx].actual)}
+                                </span>
+                              </div>
+                            )}
+                          </div>,
+                          document.body,
+                        )}
                     </div>
                   )
                 })}

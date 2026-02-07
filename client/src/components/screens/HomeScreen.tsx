@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Icon } from '@/components/ui'
+import { Icon, TypeWriter, TerminalInput } from '@/components/ui'
 
 interface HomeScreenProps {
   onCreateRoom: (name: string) => void
@@ -11,6 +11,8 @@ export default function HomeScreen({ onCreateRoom, onJoinRoom }: HomeScreenProps
   const [playerName, setPlayerName] = useState('')
   const [roomCode, setRoomCode] = useState('')
   const [mode, setMode] = useState<'menu' | 'create' | 'join'>('menu')
+  const [joinStep, setJoinStep] = useState<'code' | 'name'>('code')
+  const [focusedOption, setFocusedOption] = useState<0 | 1>(0)
 
   const handleCreate = () => {
     if (playerName.trim()) onCreateRoom(playerName.trim())
@@ -22,6 +24,54 @@ export default function HomeScreen({ onCreateRoom, onJoinRoom }: HomeScreenProps
     }
   }
 
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      const inInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA'
+      if (mode === 'menu' && !inInput) {
+        if (e.key === '1' || e.key === 'c' || e.key === 'C') {
+          e.preventDefault()
+          setMode('create')
+          setFocusedOption(0)
+        } else if (e.key === '2' || e.key === 'j' || e.key === 'J') {
+          e.preventDefault()
+          setMode('join')
+          setFocusedOption(1)
+        } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault()
+          setFocusedOption((prev) => (prev === 0 ? 1 : 0))
+        } else if (e.key === 'Enter') {
+          e.preventDefault()
+          if (focusedOption === 0) setMode('create')
+          else setMode('join')
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault()
+        setMode('menu')
+        setJoinStep('code')
+      } else if (mode === 'create' && e.key === 'Enter') {
+        const target = e.target as HTMLElement
+        if (target.tagName === 'INPUT' && (target as HTMLInputElement).name === 'create-name') {
+          e.preventDefault()
+          handleCreate()
+        }
+      } else if (mode === 'join' && e.key === 'Enter') {
+        const target = e.target as HTMLInputElement
+        if (target.tagName !== 'INPUT') return
+        if (target.name === 'join-code' && roomCode.trim()) {
+          e.preventDefault()
+          setJoinStep('name')
+        } else if (target.name === 'join-name') {
+          e.preventDefault()
+          handleJoin()
+        }
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [mode, focusedOption, playerName, roomCode])
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -30,98 +80,141 @@ export default function HomeScreen({ onCreateRoom, onJoinRoom }: HomeScreenProps
       className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 dot-pattern"
     >
       <motion.div
-        initial={{ y: -20, opacity: 0 }}
+        initial={{ y: 12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="text-center mb-10"
+        className="terminal-window w-full max-w-lg pointer-events-auto"
       >
-        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-primary mb-2">
-          LGTM
-        </h1>
-        <p className="text-secondary text-base sm:text-lg">
-          Looks Good To Me<span className="text-danger">?</span>
-        </p>
-      </motion.div>
+        <div className="terminal-title-bar">
+          <div className="terminal-title-bar-dots" aria-hidden>
+            <span /><span /><span />
+          </div>
+          <span>lgtm — looks good to me ?</span>
+        </div>
+        <div className="terminal-body">
+          <div className="text-base sm:text-lg mb-1">
+            <span className="terminal-prompt">$ </span>
+            <TypeWriter
+              text="LGTM"
+              prefix=""
+              delay={300}
+              speed={65}
+              cursor={false}
+              cursorStyle="block"
+              cursorChar="█"
+            />
+          </div>
+          <div className="text-sm sm:text-base text-[var(--terminal-muted)] mb-6">
+            <span className="terminal-prompt">$ </span>
+            <TypeWriter
+              text="pair programming"
+              prefix=""
+              delay={1200}
+              speed={60}
+              cursor
+              cursorStyle="block"
+              cursorChar="█"
+            />
+          </div>
 
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="card p-4 sm:p-8 w-full max-w-sm"
-      >
-        {mode === 'menu' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-            <button onClick={() => setMode('create')} className="btn btn-primary w-full">
-              <Icon name="plus" size={16} />
-              Create Room
-            </button>
-            <button onClick={() => setMode('join')} className="btn btn-secondary w-full">
-              <Icon name="arrowLeft" size={16} />
-              Join Room
-            </button>
-          </motion.div>
-        )}
-
-        {mode === 'create' && (
-          <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <div>
-              <label className="section-header">Your Name</label>
-              <input
-                type="text"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="Enter your name..."
-                className="input"
-                maxLength={15}
-                autoFocus
-              />
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setMode('menu')} className="btn btn-secondary flex-1">Back</button>
-              <button onClick={handleCreate} disabled={!playerName.trim()} className="btn btn-primary flex-1">
-                Create
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {mode === 'join' && (
-          <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <div>
-              <label className="section-header">Your Name</label>
-              <input
-                type="text"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="Enter your name..."
-                className="input"
-                maxLength={15}
-                autoFocus
-              />
-            </div>
-            <div>
-              <label className="section-header">Room Code</label>
-              <input
-                type="text"
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                placeholder="Enter code..."
-                className="input font-mono text-center tracking-widest"
-                maxLength={6}
-              />
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setMode('menu')} className="btn btn-secondary flex-1">Back</button>
+          {mode === 'menu' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-1">
+              <p className="terminal-comment mb-3"># type 1 or 2, or use ↑/↓ and Enter</p>
               <button
-                onClick={handleJoin}
-                disabled={!playerName.trim() || !roomCode.trim()}
-                className="btn btn-primary flex-1"
+                type="button"
+                onClick={() => setMode('create')}
+                onFocus={() => setFocusedOption(0)}
+                className={`terminal-line w-full text-left px-2 py-1.5 rounded ${focusedOption === 0 ? 'bg-white/10 text-[var(--terminal-text)]' : 'text-[var(--terminal-muted)] hover:bg-white/5'}`}
               >
-                Join
+                <span className="terminal-prompt">$</span> create
               </button>
-            </div>
-          </motion.div>
-        )}
+              <button
+                type="button"
+                onClick={() => setMode('join')}
+                onFocus={() => setFocusedOption(1)}
+                className={`terminal-line w-full text-left px-2 py-1.5 rounded ${focusedOption === 1 ? 'bg-white/10 text-[var(--terminal-text)]' : 'text-[var(--terminal-muted)] hover:bg-white/5'}`}
+              >
+                <span className="terminal-prompt">$</span> join
+              </button>
+            </motion.div>
+          )}
+
+          {mode === 'create' && (
+            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-1">
+              <p><span className="terminal-prompt">$</span> create</p>
+              <label className="terminal-input-line">
+                <span className="terminal-prompt">name&gt;</span>
+                <TerminalInput
+                  name="create-name"
+                  value={playerName}
+                  onChange={setPlayerName}
+                  maxLength={15}
+                  autoFocus
+                />
+              </label>
+              <p className="terminal-comment text-xs mt-1"># Enter to create · Esc to back</p>
+              <div className="flex gap-2 mt-2">
+                <button type="button" onClick={() => setMode('menu')} className="btn btn-secondary text-sm py-1.5">back</button>
+                <button type="button" onClick={handleCreate} disabled={!playerName.trim()} className="btn btn-primary text-sm py-1.5">create</button>
+              </div>
+            </motion.div>
+          )}
+
+          {mode === 'join' && (
+            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-1">
+              <p><span className="terminal-prompt">$</span> join</p>
+              {joinStep === 'code' && (
+                <label className="terminal-input-line">
+                  <span className="terminal-prompt">code&gt;</span>
+                  <TerminalInput
+                    name="join-code"
+                    value={roomCode}
+                    onChange={(v) => setRoomCode(v.toUpperCase())}
+                    className="font-mono tracking-wider"
+                    autoFocus
+                  />
+                </label>
+              )}
+              {joinStep === 'name' && (
+                <>
+                  <p><span className="terminal-prompt">code&gt;</span>{' '}{roomCode.trim() || '—'}</p>
+                  <label className="terminal-input-line">
+                    <span className="terminal-prompt">name&gt;</span>
+                    <TerminalInput
+                      name="join-name"
+                      value={playerName}
+                      onChange={setPlayerName}
+                      maxLength={15}
+                      autoFocus
+                    />
+                  </label>
+                </>
+              )}
+              <p className="terminal-comment text-xs mt-1">
+                {joinStep === 'code' ? '# Enter room code, then Enter · Esc to back' : '# Enter your name, then Enter · Esc to back'}
+              </p>
+              <div className="flex gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => { setMode('menu'); setJoinStep('code') }}
+                  className="btn btn-secondary text-sm py-1.5"
+                >
+                  back
+                </button>
+                {joinStep === 'name' && (
+                  <button
+                    type="button"
+                    onClick={handleJoin}
+                    disabled={!playerName.trim()}
+                    className="btn btn-primary text-sm py-1.5"
+                  >
+                    join
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </div>
       </motion.div>
 
       <motion.div
