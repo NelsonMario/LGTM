@@ -3,20 +3,13 @@ FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
 
-# Copy go mod file
+# Copy dependency file and source (go.sum not in repo; run 'go mod tidy' locally and commit go.sum for better cache)
 COPY go.mod ./
-
-# Copy source code first (needed for go mod tidy to work)
 COPY . .
+RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
-# Download dependencies and generate go.sum
-RUN go mod tidy
-
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
-
-# Production stage
-FROM alpine:latest
+# Production stage - minimal base, pinned for reproducibility
+FROM alpine:3.19
 
 RUN apk --no-cache add ca-certificates
 
