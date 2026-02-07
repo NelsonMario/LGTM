@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import Icon from './Icon'
+import { Icon } from '@/components/ui'
 
-function HomeScreen({ onCreateRoom, onJoinRoom }) {
+interface HomeScreenProps {
+  onCreateRoom: (name: string) => void
+  onJoinRoom: (roomCode: string, name: string) => void
+}
+
+export default function HomeScreen({ onCreateRoom, onJoinRoom }: HomeScreenProps) {
   const [playerName, setPlayerName] = useState('')
   const [roomCode, setRoomCode] = useState('')
-  const [mode, setMode] = useState('menu')
+  const [mode, setMode] = useState<'menu' | 'create' | 'join'>('menu')
 
   const handleCreate = () => {
-    if (playerName.trim()) {
-      onCreateRoom(playerName.trim())
-    }
+    if (playerName.trim()) onCreateRoom(playerName.trim())
   }
 
   const handleJoin = () => {
@@ -26,7 +29,6 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
       exit={{ opacity: 0 }}
       className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 dot-pattern"
     >
-      {/* Logo */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -41,7 +43,6 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
         </p>
       </motion.div>
 
-      {/* Card */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -49,23 +50,12 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
         className="card p-4 sm:p-8 w-full max-w-sm"
       >
         {mode === 'menu' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-3"
-          >
-            <button
-              onClick={() => setMode('create')}
-              className="btn btn-primary w-full"
-            >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+            <button onClick={() => setMode('create')} className="btn btn-primary w-full">
               <Icon name="plus" size={16} />
               Create Room
             </button>
-            
-            <button
-              onClick={() => setMode('join')}
-              className="btn btn-secondary w-full"
-            >
+            <button onClick={() => setMode('join')} className="btn btn-secondary w-full">
               <Icon name="arrowLeft" size={16} />
               Join Room
             </button>
@@ -73,11 +63,7 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
         )}
 
         {mode === 'create' && (
-          <motion.div
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-4"
-          >
+          <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
             <div>
               <label className="section-header">Your Name</label>
               <input
@@ -90,11 +76,8 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
                 autoFocus
               />
             </div>
-            
             <div className="flex gap-3">
-              <button onClick={() => setMode('menu')} className="btn btn-secondary flex-1">
-                Back
-              </button>
+              <button onClick={() => setMode('menu')} className="btn btn-secondary flex-1">Back</button>
               <button onClick={handleCreate} disabled={!playerName.trim()} className="btn btn-primary flex-1">
                 Create
               </button>
@@ -103,11 +86,7 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
         )}
 
         {mode === 'join' && (
-          <motion.div
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-4"
-          >
+          <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
             <div>
               <label className="section-header">Your Name</label>
               <input
@@ -120,7 +99,6 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
                 autoFocus
               />
             </div>
-            
             <div>
               <label className="section-header">Room Code</label>
               <input
@@ -132,12 +110,13 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
                 maxLength={6}
               />
             </div>
-            
             <div className="flex gap-3">
-              <button onClick={() => setMode('menu')} className="btn btn-secondary flex-1">
-                Back
-              </button>
-              <button onClick={handleJoin} disabled={!playerName.trim() || !roomCode.trim()} className="btn btn-primary flex-1">
+              <button onClick={() => setMode('menu')} className="btn btn-secondary flex-1">Back</button>
+              <button
+                onClick={handleJoin}
+                disabled={!playerName.trim() || !roomCode.trim()}
+                className="btn btn-primary flex-1"
+              >
                 Join
               </button>
             </div>
@@ -145,7 +124,6 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
         )}
       </motion.div>
 
-      {/* How to play */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -177,5 +155,3 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
     </motion.div>
   )
 }
-
-export default HomeScreen

@@ -1,17 +1,41 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Editor from '@monaco-editor/react'
-import Chat from './Chat'
-import Icon from './Icon'
-import { runTests } from '../utils/codeRunner'
+import { Chat } from '@/components/chat'
+import { Icon } from '@/components/ui'
+import { runTests } from '@/lib/codeRunner'
+import type { Task, Player, ChatMessage, TestRunResult, Theme } from '@/types'
 
-function GameScreen({ 
-  role, 
-  task, 
-  code, 
-  onCodeChange, 
-  timeRemaining, 
-  players, 
+interface GameScreenProps {
+  role: string | null
+  task: Task | null
+  code: string
+  onCodeChange: (code: string) => void
+  timeRemaining: number
+  players: Player[]
+  currentPlayer: Player | null
+  lastEditor: { name: string; id: string } | null
+  onCallMeeting: () => void
+  onSubmitTask: (passed?: boolean) => void
+  chatMessages: ChatMessage[]
+  onSendMessage: (message: string) => void
+  theme: Theme
+  onToggleTheme: () => void
+}
+
+function formatTime(seconds: number) {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+export default function GameScreen({
+  role,
+  task,
+  code,
+  onCodeChange,
+  timeRemaining,
+  players,
   currentPlayer,
   lastEditor,
   onCallMeeting,
@@ -19,62 +43,40 @@ function GameScreen({
   chatMessages,
   onSendMessage,
   theme,
-  onToggleTheme
-}) {
+  onToggleTheme,
+}: GameScreenProps) {
   const [showMeetingConfirm, setShowMeetingConfirm] = useState(false)
   const [showSubmitModal, setShowSubmitModal] = useState(false)
-  const [testResults, setTestResults] = useState(null)
+  const [testResults, setTestResults] = useState<TestRunResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
-  const [editorTheme, setEditorTheme] = useState('light')
+  const [editorTheme, setEditorTheme] = useState<'vs-dark' | 'light'>('light')
   const [testCasesExpanded, setTestCasesExpanded] = useState(true)
-  const [hoveredTestCase, setHoveredTestCase] = useState(null)
+  const [hoveredTestCase, setHoveredTestCase] = useState<number | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
-  const editorRef = useRef(null)
+  const editorRef = useRef<unknown>(null)
 
-  // Sync editor theme with document theme
   useEffect(() => {
     const updateTheme = () => {
-      const theme = document.documentElement.getAttribute('data-theme')
-      setEditorTheme(theme === 'dark' ? 'vs-dark' : 'light')
+      setEditorTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'light')
     }
     updateTheme()
-    
-    // Watch for theme changes
     const observer = new MutationObserver(updateTheme)
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
-    
     return () => observer.disconnect()
   }, [])
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const handleEditorChange = (value) => {
-    onCodeChange(value)
-  }
-
-  const handleEditorMount = (editor) => {
-    editorRef.current = editor
-  }
 
   const handleRunTests = () => {
     if (!task) return
     setIsRunning(true)
-    
     setTimeout(() => {
-      const results = runTests(code, task.functionName, task.testCases)
-      setTestResults(results)
+      setTestResults(runTests(code, task.functionName, task.testCases))
       setIsRunning(false)
     }, 300)
   }
 
   const handleSubmitClick = () => {
     if (!task) return
-    const results = runTests(code, task.functionName, task.testCases)
-    setTestResults(results)
+    setTestResults(runTests(code, task.functionName, task.testCases))
     setShowSubmitModal(true)
   }
 
@@ -99,7 +101,6 @@ function GameScreen({
       exit={{ opacity: 0 }}
       className="min-h-screen flex flex-col bg-background"
     >
-      {/* Header */}
       <div className="bg-surface border-b border-border px-3 sm:px-6 py-2 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <span className={`badge text-xs ${role === 'engineer' ? 'badge-success' : 'badge-danger'}`}>
@@ -109,14 +110,12 @@ function GameScreen({
             {role === 'engineer' ? 'Complete the task' : 'Sabotage secretly'}
           </span>
         </div>
-
         <div className={`timer text-lg sm:text-xl md:text-2xl ${isTimeWarning ? 'warning' : ''}`}>
           {formatTime(timeRemaining)}
         </div>
-
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-          <button 
-            onClick={handleRunTests} 
+          <button
+            onClick={handleRunTests}
             disabled={isRunning}
             className="btn btn-secondary text-xs sm:text-sm px-2 sm:px-3"
           >
@@ -131,19 +130,13 @@ function GameScreen({
             <Icon name="alert" size={12} className="sm:w-3.5 sm:h-3.5" />
             <span className="hidden sm:inline">Meeting</span>
           </button>
-          <button
-            onClick={onToggleTheme}
-            className="btn btn-ghost p-1.5 sm:p-2"
-            aria-label="Toggle theme"
-          >
+          <button onClick={onToggleTheme} className="btn btn-ghost p-1.5 sm:p-2" aria-label="Toggle theme">
             <Icon name={theme === 'light' ? 'moon' : 'sun'} size={14} className="sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Left Panel */}
         <div className="w-full lg:w-72 bg-surface border-r-0 lg:border-r border-b lg:border-b-0 border-border flex flex-col shrink-0 max-h-64 lg:max-h-none overflow-y-auto">
           <div className="p-3 sm:p-4 border-b border-border">
             <p className="section-header text-xs">Objective</p>
@@ -151,18 +144,13 @@ function GameScreen({
             <p className="text-secondary text-xs leading-relaxed">{task?.description}</p>
           </div>
 
-          {/* Test Cases */}
           <div className="border-b border-border">
             <button
               onClick={() => setTestCasesExpanded(!testCasesExpanded)}
               className="w-full p-4 flex items-center justify-between hover:bg-background transition-colors"
             >
               <p className="section-header">Test Cases</p>
-              <Icon 
-                name={testCasesExpanded ? 'x' : 'plus'} 
-                size={14} 
-                className="text-muted"
-              />
+              <Icon name={testCasesExpanded ? 'x' : 'plus'} size={14} className="text-muted" />
             </button>
             {testCasesExpanded && (
               <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-1.5 max-h-64 overflow-y-auto">
@@ -170,24 +158,23 @@ function GameScreen({
                   const fullText = `${task.functionName}(${JSON.stringify(tc.input)}) → ${JSON.stringify(tc.expected)}`
                   const truncatedText = `${task.functionName}(${JSON.stringify(tc.input).slice(0, 20)}...) → ${JSON.stringify(tc.expected).slice(0, 20)}${JSON.stringify(tc.expected).length > 20 ? '...' : ''}`
                   const isTruncated = fullText.length > 60
-                  
                   return (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       className="relative flex items-start gap-2 text-xs font-mono group"
-                      onMouseEnter={(e) => {
+                      onMouseEnter={(e: React.MouseEvent) => {
                         setHoveredTestCase(idx)
                         setTooltipPosition({ x: e.clientX, y: e.clientY })
                       }}
-                      onMouseMove={(e) => {
-                        if (hoveredTestCase === idx) {
-                          setTooltipPosition({ x: e.clientX, y: e.clientY })
-                        }
+                      onMouseMove={(e: React.MouseEvent) => {
+                        if (hoveredTestCase === idx) setTooltipPosition({ x: e.clientX, y: e.clientY })
                       }}
                       onMouseLeave={() => setHoveredTestCase(null)}
                     >
                       {testResults?.results?.[idx] ? (
-                        <span className={`w-4 h-4 flex items-center justify-center shrink-0 mt-0.5 ${testResults.results[idx].passed ? 'test-pass' : 'test-fail'}`}>
+                        <span
+                          className={`w-4 h-4 flex items-center justify-center shrink-0 mt-0.5 ${testResults.results[idx].passed ? 'test-pass' : 'test-fail'}`}
+                        >
                           <Icon name={testResults.results[idx].passed ? 'check' : 'x'} size={12} />
                         </span>
                       ) : (
@@ -197,24 +184,31 @@ function GameScreen({
                         {isTruncated ? truncatedText : fullText}
                       </span>
                       {hoveredTestCase === idx && isTruncated && (
-                        <div 
+                        <div
                           className="fixed z-[9999] p-3 bg-surface border border-border rounded-lg shadow-2xl text-xs font-mono max-w-md break-words pointer-events-none"
                           style={{
                             left: `${tooltipPosition.x + 10}px`,
                             top: `${tooltipPosition.y + 10}px`,
-                            maxWidth: '400px'
+                            maxWidth: '400px',
                           }}
                         >
                           <div className="text-primary font-semibold mb-2">Test {idx + 1}</div>
                           <div className="text-secondary mb-1">
-                            <span className="text-muted">Input:</span> <span className="text-primary font-mono ml-1">{JSON.stringify(tc.input)}</span>
+                            <span className="text-muted">Input:</span>{' '}
+                            <span className="text-primary font-mono ml-1">{JSON.stringify(tc.input)}</span>
                           </div>
                           <div className="text-secondary mb-1">
-                            <span className="text-muted">Expected:</span> <span className="text-primary font-mono ml-1">{JSON.stringify(tc.expected)}</span>
+                            <span className="text-muted">Expected:</span>{' '}
+                            <span className="text-primary font-mono ml-1">{JSON.stringify(tc.expected)}</span>
                           </div>
                           {testResults?.results?.[idx] && (
-                            <div className={`mt-2 pt-2 border-t border-border ${testResults.results[idx].passed ? 'test-pass' : 'test-fail'}`}>
-                              <span className="text-muted">Actual:</span> <span className="font-mono ml-1">{JSON.stringify(testResults.results[idx].actual)}</span>
+                            <div
+                              className={`mt-2 pt-2 border-t border-border ${testResults.results[idx].passed ? 'test-pass' : 'test-fail'}`}
+                            >
+                              <span className="text-muted">Actual:</span>{' '}
+                              <span className="font-mono ml-1">
+                                {JSON.stringify(testResults.results[idx].actual)}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -226,16 +220,12 @@ function GameScreen({
             )}
           </div>
 
-          {/* Players */}
           <div className="p-3 sm:p-4 border-b border-border">
             <p className="section-header text-xs">Players</p>
             <div className="space-y-2">
               {players.map((player) => (
-                <div 
-                  key={player.id}
-                  className={`flex items-center gap-2 ${!player.isAlive ? 'opacity-40' : ''}`}
-                >
-                  <div 
+                <div key={player.id} className={`flex items-center gap-2 ${!player.isAlive ? 'opacity-40' : ''}`}>
+                  <div
                     className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white"
                     style={{ backgroundColor: player.color }}
                   >
@@ -249,31 +239,31 @@ function GameScreen({
             </div>
           </div>
 
-          {/* Chat */}
           <div className="flex-1 flex flex-col min-h-0">
             <Chat messages={chatMessages} onSendMessage={onSendMessage} currentPlayer={currentPlayer} />
           </div>
         </div>
 
-        {/* Code Editor */}
         <div className="flex-1 flex flex-col bg-surface min-h-0">
           <div className="px-3 sm:px-4 py-2 border-b border-border flex items-center justify-between gap-2">
             <span className="text-xs sm:text-sm font-medium truncate">solution.js</span>
             {lastEditor && (
               <span className="text-xs text-muted shrink-0 hidden sm:inline">
-                Last edit: <span style={{ color: players.find(p => p.id === lastEditor.id)?.color }}>{lastEditor.name}</span>
+                Last edit:{' '}
+                <span style={{ color: players.find((p) => p.id === lastEditor.id)?.color ?? undefined }}>
+                  {lastEditor.name}
+                </span>
               </span>
             )}
           </div>
-
           <div className="flex-1 min-h-0">
             <Editor
               height="100%"
               defaultLanguage="javascript"
               theme={editorTheme}
               value={code}
-              onChange={handleEditorChange}
-              onMount={handleEditorMount}
+              onChange={(value) => onCodeChange(value ?? '')}
+              onMount={(editor) => { editorRef.current = editor }}
               options={{
                 fontSize: 11,
                 fontFamily: 'JetBrains Mono, SF Mono, monospace',
@@ -291,7 +281,6 @@ function GameScreen({
             />
           </div>
 
-          {/* Test Output */}
           <AnimatePresence>
             {testResults && (
               <motion.div
@@ -302,23 +291,30 @@ function GameScreen({
               >
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`font-medium text-sm flex items-center gap-1.5 ${testResults.passed ? 'test-pass' : 'test-fail'}`}>
+                    <span
+                      className={`font-medium text-sm flex items-center gap-1.5 ${testResults.passed ? 'test-pass' : 'test-fail'}`}
+                    >
                       <Icon name={testResults.passed ? 'check' : 'x'} size={14} />
                       {testResults.passed ? 'All tests passed' : 'Tests failed'}
                     </span>
-                    <button onClick={() => setTestResults(null)} className="btn-ghost text-xs">
-                      Close
-                    </button>
+                    <button onClick={() => setTestResults(null)} className="btn-ghost text-xs">Close</button>
                   </div>
                   {testResults.error && !testResults.results?.length && (
                     <p className="test-fail text-sm">{testResults.error}</p>
                   )}
                   <div className="space-y-1 text-xs font-mono">
                     {testResults.results?.map((result, idx) => (
-                      <div key={idx} className={`flex items-center gap-1.5 ${result.passed ? 'test-pass' : 'test-fail'}`}>
+                      <div
+                        key={idx}
+                        className={`flex items-center gap-1.5 ${result.passed ? 'test-pass' : 'test-fail'}`}
+                      >
                         <Icon name={result.passed ? 'check' : 'x'} size={12} />
-                        <span>{task.functionName}({JSON.stringify(result.input)}) = {JSON.stringify(result.actual)}</span>
-                        {!result.passed && <span className="text-muted"> (expected {JSON.stringify(result.expected)})</span>}
+                        <span>
+                          {task?.functionName}({JSON.stringify(result.input)}) = {JSON.stringify(result.actual)}
+                        </span>
+                        {!result.passed && (
+                          <span className="text-muted"> (expected {JSON.stringify(result.expected)})</span>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -329,36 +325,32 @@ function GameScreen({
         </div>
       </div>
 
-      {/* Submit Modal */}
       <AnimatePresence>
         {showSubmitModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="modal-overlay"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="modal-overlay">
             <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="modal-content max-w-[90vw] sm:max-w-md">
-              <h3 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2 ${testResults?.passed ? 'test-pass' : 'test-fail'}`}>
+              <h3
+                className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2 ${testResults?.passed ? 'test-pass' : 'test-fail'}`}
+              >
                 <Icon name={testResults?.passed ? 'check' : 'x'} size={18} className="sm:w-5 sm:h-5" />
                 {testResults?.passed ? 'Ready to Submit' : 'Tests Failed'}
               </h3>
-              
               <div className="mb-6 p-4 bg-background rounded-lg max-h-40 overflow-y-auto">
                 {testResults?.results?.map((result, idx) => (
-                  <div key={idx} className={`text-sm font-mono flex items-center gap-1.5 ${result.passed ? 'test-pass' : 'test-fail'}`}>
+                  <div
+                    key={idx}
+                    className={`text-sm font-mono flex items-center gap-1.5 ${result.passed ? 'test-pass' : 'test-fail'}`}
+                  >
                     <Icon name={result.passed ? 'check' : 'x'} size={12} />
                     Test {idx + 1}
                   </div>
                 ))}
               </div>
-
               <p className="text-secondary text-sm mb-6">
-                {testResults?.passed 
-                  ? 'All tests passed! Submit to win the game?' 
+                {testResults?.passed
+                  ? 'All tests passed! Submit to win the game?'
                   : 'Fix the failing tests before submitting.'}
               </p>
-              
               <div className="flex gap-3">
                 <button onClick={() => setShowSubmitModal(false)} className="btn btn-secondary flex-1">
                   Cancel
@@ -374,15 +366,9 @@ function GameScreen({
         )}
       </AnimatePresence>
 
-      {/* Meeting Modal */}
       <AnimatePresence>
         {showMeetingConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="modal-overlay"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="modal-overlay">
             <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="modal-content text-center">
               <h3 className="text-xl font-semibold mb-2">Emergency Meeting</h3>
               <p className="text-secondary text-sm mb-6">This will pause coding and start a vote.</p>
@@ -401,5 +387,3 @@ function GameScreen({
     </motion.div>
   )
 }
-
-export default GameScreen

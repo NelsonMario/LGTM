@@ -1,7 +1,7 @@
+import type { ReactNode } from 'react'
 import { useState, useEffect } from 'react'
 
-// Minimal inline SVG icons as fallbacks
-const fallbackIcons = {
+const fallbackIcons: Record<string, ReactNode> = {
   sun: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="5"/>
@@ -77,53 +77,41 @@ const fallbackIcons = {
   ),
 }
 
-// CDN URL for Lucide icons (fallback to inline SVG if unavailable)
 const LUCIDE_CDN = 'https://cdn.jsdelivr.net/npm/lucide-static@latest/icons'
 
-function Icon({ name, size = 18, className = '', useCdn = false }) {
+export type IconName = keyof typeof fallbackIcons
+
+interface IconProps {
+  name: IconName
+  size?: number
+  className?: string
+  useCdn?: boolean
+}
+
+export default function Icon({ name, size = 18, className = '', useCdn = false }: IconProps) {
   const [useFallback, setUseFallback] = useState(!useCdn)
-  const [cdnSvg, setCdnSvg] = useState(null)
+  const [cdnSvg, setCdnSvg] = useState<string | null>(null)
 
   useEffect(() => {
     if (!useCdn || useFallback) return
-
-    // Try to fetch from CDN
     fetch(`${LUCIDE_CDN}/${name}.svg`)
-      .then(res => {
-        if (!res.ok) throw new Error('Not found')
-        return res.text()
-      })
-      .then(svg => {
-        setCdnSvg(svg)
-      })
-      .catch(() => {
-        setUseFallback(true)
-      })
+      .then((res) => (res.ok ? res.text() : Promise.reject(new Error('Not found'))))
+      .then(setCdnSvg)
+      .catch(() => setUseFallback(true))
   }, [name, useCdn, useFallback])
 
-  // Use inline fallback
   if (useFallback || !cdnSvg) {
     const fallback = fallbackIcons[name]
     if (!fallback) {
-      // Ultimate fallback - empty box
-      return (
-        <span 
-          className={className}
-          style={{ width: size, height: size, display: 'inline-block' }}
-        />
-      )
+      return <span className={className} style={{ width: size, height: size, display: 'inline-block' }} />
     }
     return (
-      <span 
-        className={className} 
-        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-      >
+      <span className={className} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
         {fallback}
       </span>
     )
   }
 
-  // Use CDN SVG
   return (
     <span
       className={className}
@@ -132,6 +120,3 @@ function Icon({ name, size = 18, className = '', useCdn = false }) {
     />
   )
 }
-
-export default Icon
-export { fallbackIcons }

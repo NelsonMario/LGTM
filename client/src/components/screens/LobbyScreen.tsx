@@ -1,12 +1,18 @@
 import { motion } from 'framer-motion'
+import type { Player } from '@/types'
 
-function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
+interface LobbyScreenProps {
+  roomCode: string
+  players: Player[]
+  currentPlayer: Player | null
+  onStartGame: () => void
+}
+
+export default function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }: LobbyScreenProps) {
   const isHost = players[0]?.id === currentPlayer?.id
   const canStart = players.length >= 4
 
-  const copyRoomCode = () => {
-    navigator.clipboard.writeText(roomCode)
-  }
+  const copyRoomCode = () => navigator.clipboard.writeText(roomCode)
 
   return (
     <motion.div
@@ -15,16 +21,11 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
       exit={{ opacity: 0 }}
       className="min-h-screen flex flex-col items-center justify-center p-8 dot-pattern"
     >
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="text-center mb-8"
-      >
+      <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center mb-8">
         <h2 className="text-2xl font-semibold text-primary mb-1">Waiting Room</h2>
         <p className="text-secondary text-sm">Waiting for players to join...</p>
       </motion.div>
 
-      {/* Room Code */}
       <motion.button
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -38,7 +39,6 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
         </p>
       </motion.button>
 
-      {/* Players Grid */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -57,7 +57,7 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
             >
               {player ? (
                 <>
-                  <div 
+                  <div
                     className="w-12 h-12 mx-auto rounded-full mb-3 flex items-center justify-center text-lg font-semibold text-white"
                     style={{ backgroundColor: player.color }}
                   >
@@ -82,7 +82,6 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
         })}
       </motion.div>
 
-      {/* Player count */}
       <div className="text-center mb-6">
         <span className={`text-2xl font-semibold ${canStart ? 'text-success' : 'text-warning'}`}>
           {players.length}/4
@@ -90,7 +89,6 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
         <span className="text-secondary ml-2 text-sm">players</span>
       </div>
 
-      {/* Start button */}
       {isHost ? (
         <motion.button
           initial={{ opacity: 0 }}
@@ -103,16 +101,11 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
           {canStart ? 'Start Game' : 'Need 4 Players'}
         </motion.button>
       ) : (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-secondary text-sm"
-        >
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-secondary text-sm">
           Waiting for host to start...
         </motion.p>
       )}
 
-      {/* Rules */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -142,5 +135,3 @@ function LobbyScreen({ roomCode, players, currentPlayer, onStartGame }) {
     </motion.div>
   )
 }
-
-export default LobbyScreen

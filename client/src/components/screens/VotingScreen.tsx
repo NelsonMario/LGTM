@@ -1,21 +1,41 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import Chat from './Chat'
-import Icon from './Icon'
+import { Chat } from '@/components/chat'
+import { Icon } from '@/components/ui'
+import type { Player, ChatMessage, EditHistoryEntry, Theme } from '@/types'
 
-function VotingScreen({ 
-  players, 
-  currentPlayer, 
-  editHistory, 
+interface VotingScreenProps {
+  players: Player[]
+  currentPlayer: Player | null
+  editHistory: EditHistoryEntry[]
+  meetingCaller: string | null
+  timeRemaining: number
+  onVote: (targetId: string) => void
+  chatMessages: ChatMessage[]
+  onSendMessage: (message: string) => void
+  theme: Theme
+  onToggleTheme: () => void
+}
+
+function formatTime(seconds: number) {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+export default function VotingScreen({
+  players,
+  currentPlayer,
+  editHistory,
   meetingCaller,
   timeRemaining,
   onVote,
   chatMessages,
   onSendMessage,
   theme,
-  onToggleTheme
-}) {
-  const [selectedPlayer, setSelectedPlayer] = useState(null)
+  onToggleTheme,
+}: VotingScreenProps) {
+  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
   const [hasVoted, setHasVoted] = useState(false)
 
   const handleVote = () => {
@@ -30,13 +50,7 @@ function VotingScreen({
     setHasVoted(true)
   }
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const alivePlayers = players.filter(p => p.isAlive)
+  const alivePlayers = players.filter((p) => p.isAlive !== false)
 
   return (
     <motion.div
@@ -45,7 +59,6 @@ function VotingScreen({
       exit={{ opacity: 0 }}
       className="min-h-screen flex flex-col bg-background"
     >
-      {/* Header */}
       <div className="bg-danger/10 border-b border-danger/20 px-6 py-4 relative">
         <div className="text-center">
           <motion.h2
@@ -57,32 +70,25 @@ function VotingScreen({
             Emergency Meeting
           </motion.h2>
           <p className="text-secondary text-sm mt-1">
-            Called by <span className="font-medium text-primary">{meetingCaller}</span>
+            Called by <span className="font-medium text-primary">{meetingCaller ?? '—'}</span>
           </p>
         </div>
-        <button
-          onClick={onToggleTheme}
-          className="btn btn-ghost p-2 absolute top-4 right-4"
-          aria-label="Toggle theme"
-        >
+        <button onClick={onToggleTheme} className="btn btn-ghost p-2 absolute top-4 right-4" aria-label="Toggle theme">
           <Icon name={theme === 'light' ? 'moon' : 'sun'} size={16} />
         </button>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Edit History */}
         <div className="w-full lg:w-80 bg-surface border-r-0 lg:border-r border-b lg:border-b-0 border-border flex flex-col shrink-0 max-h-48 lg:max-h-none overflow-y-auto">
           <div className="p-3 sm:p-4 border-b border-border">
             <p className="section-header text-xs">Edit History</p>
             <p className="text-xs text-muted">Recent code changes</p>
           </div>
-          
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2">
             {editHistory.length === 0 ? (
               <p className="text-muted text-sm">No edits recorded.</p>
             ) : (
-              editHistory.slice().reverse().map((edit, index) => (
+              [...editHistory].reverse().map((edit, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -10 }}
@@ -91,23 +97,27 @@ function VotingScreen({
                   className="card p-3"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span 
+                    <span
                       className="font-medium text-sm"
-                      style={{ color: players.find(p => p.id === edit.playerId)?.color }}
+                      style={{ color: players.find((p) => p.id === edit.playerId)?.color ?? undefined }}
                     >
-                      {edit.playerName}
+                      {edit.playerName ?? '—'}
                     </span>
                     <span className="text-xs text-muted">
-                      {new Date(edit.timestamp).toLocaleTimeString()}
+                      {edit.timestamp != null ? new Date(edit.timestamp).toLocaleTimeString() : ''}
                     </span>
                   </div>
                   <div className="text-xs">
-                    {edit.charDiff > 0 ? (
-                      <span className="test-pass">+{edit.charDiff} chars</span>
-                    ) : edit.charDiff < 0 ? (
-                      <span className="test-fail">{edit.charDiff} chars</span>
+                    {edit.charDiff != null ? (
+                      edit.charDiff > 0 ? (
+                        <span className="test-pass">+{edit.charDiff} chars</span>
+                      ) : edit.charDiff < 0 ? (
+                        <span className="test-fail">{edit.charDiff} chars</span>
+                      ) : (
+                        <span className="text-muted">No change</span>
+                      )
                     ) : (
-                      <span className="text-muted">No change</span>
+                      <span className="text-muted">—</span>
                     )}
                   </div>
                 </motion.div>
@@ -116,9 +126,7 @@ function VotingScreen({
           </div>
         </div>
 
-        {/* Voting Area */}
         <div className="flex-1 flex flex-col p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          {/* Timer */}
           <div className="text-center mb-4 sm:mb-8">
             <div className={`timer text-2xl sm:text-3xl lg:text-4xl ${timeRemaining <= 10 ? 'warning' : ''}`}>
               {formatTime(timeRemaining)}
@@ -126,12 +134,10 @@ function VotingScreen({
             <p className="text-secondary mt-2 text-xs sm:text-sm">Vote for who you think is the impostor</p>
           </div>
 
-          {/* Vote Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-xl mx-auto mb-4 sm:mb-8 w-full">
             {alivePlayers.map((player, index) => {
               const isCurrentPlayer = player.id === currentPlayer?.id
               const isSelected = selectedPlayer === player.id
-              
               return (
                 <motion.button
                   key={player.id}
@@ -142,7 +148,7 @@ function VotingScreen({
                   disabled={hasVoted || isCurrentPlayer}
                   className={`vote-card ${isSelected ? 'selected' : ''}`}
                 >
-                  <div 
+                  <div
                     className="w-16 h-16 mx-auto rounded-full mb-3 flex items-center justify-center text-2xl font-semibold text-white"
                     style={{ backgroundColor: player.color }}
                   >
@@ -156,22 +162,19 @@ function VotingScreen({
             })}
           </div>
 
-          {/* Vote Actions */}
           {!hasVoted ? (
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center px-4">
-              <button onClick={handleSkip} className="btn btn-secondary text-sm">
-                Skip Vote
-              </button>
-              <button onClick={handleVote} disabled={selectedPlayer === null} className="btn btn-primary text-sm">
+              <button onClick={handleSkip} className="btn btn-secondary text-sm">Skip Vote</button>
+              <button
+                onClick={handleVote}
+                disabled={selectedPlayer === null}
+                className="btn btn-primary text-sm"
+              >
                 Vote to Eject
               </button>
             </div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
               <p className="text-lg font-medium test-pass flex items-center justify-center gap-2">
                 <Icon name="check" size={18} /> Vote submitted
               </p>
@@ -180,7 +183,6 @@ function VotingScreen({
           )}
         </div>
 
-        {/* Chat */}
         <div className="w-full lg:w-72 bg-surface border-l-0 lg:border-l border-t lg:border-t-0 border-border flex flex-col shrink-0 max-h-64 lg:max-h-none">
           <div className="p-3 sm:p-4 border-b border-border">
             <p className="section-header text-xs">Discussion</p>
@@ -193,5 +195,3 @@ function VotingScreen({
     </motion.div>
   )
 }
-
-export default VotingScreen

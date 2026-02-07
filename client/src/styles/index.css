@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Light Theme (default) */
+/* ========== Theme variables ========== */
 :root {
   --bg-primary: #fafafa;
   --bg-secondary: #ffffff;
@@ -20,7 +20,6 @@
   --dot-color: #e4e4e7;
 }
 
-/* Dark Theme */
 [data-theme="dark"] {
   --bg-primary: #09090b;
   --bg-secondary: #18181b;
@@ -38,6 +37,7 @@
   --dot-color: #27272a;
 }
 
+/* ========== Base ========== */
 * {
   margin: 0;
   padding: 0;
@@ -54,7 +54,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Clean card styling */
+/* ========== Components ========== */
 .card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -71,7 +71,6 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Minimal button */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -120,9 +119,7 @@ body {
   border-color: var(--danger);
 }
 
-.btn-danger:hover {
-  opacity: 0.9;
-}
+.btn-danger:hover { opacity: 0.9; }
 
 .btn-success {
   background: var(--success);
@@ -130,9 +127,7 @@ body {
   border-color: var(--success);
 }
 
-.btn-success:hover {
-  opacity: 0.9;
-}
+.btn-success:hover { opacity: 0.9; }
 
 .btn-ghost {
   background: transparent;
@@ -146,7 +141,6 @@ body {
   color: var(--text-primary);
 }
 
-/* Clean input */
 .input {
   width: 100%;
   padding: 12px 16px;
@@ -172,7 +166,6 @@ body {
   color: var(--text-muted);
 }
 
-/* Badge styling */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -195,7 +188,6 @@ body {
   color: var(--danger);
 }
 
-/* Timer */
 .timer {
   font-family: 'JetBrains Mono', 'SF Mono', monospace;
   font-size: 1.25rem;
@@ -204,16 +196,11 @@ body {
 }
 
 @media (min-width: 640px) {
-  .timer {
-    font-size: 1.5rem;
-  }
+  .timer { font-size: 1.5rem; }
 }
 
-.timer.warning {
-  color: var(--danger);
-}
+.timer.warning { color: var(--danger); }
 
-/* Player card */
 .player-card {
   display: flex;
   align-items: center;
@@ -225,15 +212,9 @@ body {
   transition: all 0.15s ease;
 }
 
-.player-card:hover {
-  border-color: var(--text-muted);
-}
+.player-card:hover { border-color: var(--text-muted); }
+.player-card.dead { opacity: 0.4; }
 
-.player-card.dead {
-  opacity: 0.4;
-}
-
-/* Chat styles */
 .chat-message {
   padding: 10px 14px;
   border-radius: 10px;
@@ -248,7 +229,6 @@ body {
   background: rgba(34, 197, 94, 0.1);
 }
 
-/* Vote button */
 .vote-card {
   padding: 24px;
   background: var(--bg-secondary);
@@ -279,7 +259,6 @@ body {
   cursor: not-allowed;
 }
 
-/* Section header */
 .section-header {
   font-size: 11px;
   font-weight: 600;
@@ -289,33 +268,12 @@ body {
   margin-bottom: 12px;
 }
 
-/* Divider */
 .divider {
   height: 1px;
   background: var(--border-color);
   margin: 16px 0;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
-/* Modal overlay */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -336,23 +294,16 @@ body {
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
 }
 
-/* Code editor wrapper */
 .editor-wrapper {
   border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
 }
 
-/* Test result indicators */
-.test-pass {
-  color: var(--success);
-}
+.test-pass { color: var(--success); }
+.test-fail { color: var(--danger); }
 
-.test-fail {
-  color: var(--danger);
-}
-
-/* Animations */
+/* ========== Animations ========== */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -371,13 +322,12 @@ body {
   animation: scaleIn 0.2s ease forwards;
 }
 
-/* Dot pattern background */
+/* ========== Layout & utilities ========== */
 .dot-pattern {
   background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-/* Theme toggle button */
 .theme-toggle {
   width: 36px;
   height: 36px;
@@ -408,27 +358,18 @@ body {
   transform: scale(1.05);
 }
 
-/* Surface colors for panels */
-.bg-surface {
-  background-color: var(--bg-secondary);
-}
+.bg-surface { background-color: var(--bg-secondary); }
+.bg-background { background-color: var(--bg-primary); }
+.border-border { border-color: var(--border-color); }
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
 
-.bg-background {
-  background-color: var(--bg-primary);
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
 }
-
-.border-border {
-  border-color: var(--border-color);
-}
-
-.text-primary {
-  color: var(--text-primary);
-}
-
-.text-secondary {
-  color: var(--text-secondary);
-}
-
-.text-muted {
-  color: var(--text-muted);
-}
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
