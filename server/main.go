@@ -21,10 +21,10 @@ func main() {
 	// Serve static files for production
 	http.Handle("/", http.FileServer(http.Dir("../client/dist")))
 
-	log.Println("🚀 LGTM server running on :3001")
-	log.Println("📡 WebSocket endpoint: ws://localhost:3001/ws")
+	log.Println("🚀 LGTM server running on :8081")
+	log.Println("📡 WebSocket endpoint: ws://localhost:8081/ws")
 
-	if err := http.ListenAndServe(":3001", nil); err != nil {
+	if err := http.ListenAndServe(":8081", nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
