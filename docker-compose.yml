@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     container_name: lgtm-server
     ports:
-      - "3001:3001"
+      - "8081:8081"
     restart: unless-stopped
     networks:
       - lgtm-network
@@ -14,7 +14,7 @@ services:
       # Mount tasks.json for easy editing without rebuild
       - ./server/tasks.json:/root/tasks.json:ro
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8081"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile
     container_name: lgtm-client
     ports:
-      - "8080:80"
+      - "3001:80"
     depends_on:
       - server
     restart: unless-stopped
