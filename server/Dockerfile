@@ -21,8 +21,5 @@ COPY --from=builder /app/main .
 # Copy tasks.json from builder
 COPY --from=builder /app/tasks.json .
 
-# Expose port
-EXPOSE 8081
-
 # Run the application
 CMD ["./main"]
